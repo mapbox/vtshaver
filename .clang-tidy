@@ -1,5 +1,5 @@
 ---
-Checks:          '*'
+Checks:          '*,-fuchsia-default-arguments'
 WarningsAsErrors: '*'
 HeaderFilterRegex: '\/src\/'
 AnalyzeTemporaryDtors: false
