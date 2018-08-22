@@ -1,0 +1,24 @@
+{
+    "version": 1,
+    "name": "Water",
+    "center": [
+        0,
+        -1.4210854715202004e-13
+    ],
+    "zoom": 0.8407778102278685,
+    "bearing": 0,
+    "pitch": 0,
+    "layers": [
+        {
+            "id": "water",
+            "paint": {
+                "fill-color": "hsl(190, 51%, 55%)"
+            },
+            "interactive": true,
+            "layout": {},
+            "type": "fill",
+            "source": "composite",
+            "source-layer": "water"
+        }
+    ]
+}

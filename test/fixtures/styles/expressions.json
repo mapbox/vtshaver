@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "name": "Expressions",
+  "layers": [
+    {
+      "id": "landuse",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "landuse",
+      "filter": ["match", ["get", "class"], ["airport", "cemetery", "hospital", "park", "pitch", "sand", "school"], true, false]
+    },
+        {
+      "id": "water-shadow",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "water"
+    },
+    {
+      "id": "building",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "building",
+      "minzoom": 15,
+      "filter": ["all",
+        ["!", ["match", ["get", "type"], "building:part", true, false]],
+        ["==", ["get", "underground"], "false"]
+      ]
+    },
+    {
+      "id": "road-pedestrian-polygon-fill",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "road",
+      "minzoom": 12,
+      "filter": ["all",
+        ["==", ["geometry-type"], "Polygon"],
+        ["match", ["get", "structure"], ["none", "ford"], true, false],
+        ["match", ["get", "class"], ["path", "pedestrian"], true, false]
+      ]
+    },
+    {
+      "id": "poi-label",
+      "type": "symbol",
+      "source": "composite",
+      "source-layer": "poi_label",
+      "filter": ["<=", ["number", ["get", "filterrank"]], 3]
+    },
+    { "id": "water", "ref": "water-shadow", "paint": { "fill-color": "hsl(196, 80%, 70%)" } },
+    {
+      "id": "housenum-label",
+      "type": "symbol",
+      "source": "composite",
+      "source-layer": "housenum_label",
+      "minzoom": 17
+    }
+  ]
+}

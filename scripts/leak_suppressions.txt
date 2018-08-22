@@ -1,0 +1,4 @@
+leak:__strdup
+leak:v8::internal
+leak:node::CreateEnvironment
+leak:protozero::pbf_writer::add_bytes

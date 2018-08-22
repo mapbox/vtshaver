@@ -1,34 +1,40 @@
 {
-  "name": "@mapbox/node-cpp-skel",
+  "name": "@mapbox/vtshaver",
   "version": "0.1.0",
-  "description": "Skeleton for bindings to C++ libraries for Node.js using NAN",
-  "url": "http://github.com/mapbox/node-cpp-skel",
+  "description": "Creates style-optimized vector tiles",
   "main": "./lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:mapbox/node-cpp-skel.git"
+    "url": "git@github.com:mapbox/vtshaver.git"
   },
   "scripts": {
     "test": "tape test/*.test.js",
     "install": "node-pre-gyp install --fallback-to-build",
-    "docs": "documentation build src/standalone_async/*.cpp src/standalone/*.cpp src/object_sync/*.cpp src/object_async/*.cpp --polyglot -f md -o API.md"
+    "docs": "npm install ^4.0.0-beta5 && documentation build src/*.cpp --polyglot -f md -o API.md"
   },
   "author": "Mapbox",
   "license": "ISC",
   "dependencies": {
+    "@mapbox/vector-tile": "^1.3.0",
     "mason-js-sdk": "~0.1.4",
-    "nan": "~2.10.0",
-    "node-pre-gyp": "~0.10.0"
+    "minimist": "^1.2.0",
+    "nan": "^2.10.0",
+    "node-pre-gyp": "^0.10.2",
+    "pbf": "^3.0.5"
   },
   "devDependencies": {
+    "bytes": "^2.4.0",
+    "@mapbox/mvt-fixtures": "^3.3.0",
     "aws-sdk": "^2.4.7",
-    "tape": "^4.5.1",
     "d3-queue": "^3.0.1",
-    "minimist": "~1.2.0",
-    "bytes": "^2.4.0"
+    "tape": "^4.5.1",
+    "minimist": "~1.2.0"
+  },
+  "bin": {
+    "vtshave": "./bin/vtshave.js"
   },
   "binary": {
-    "module_name": "module",
+    "module_name": "vtshaver",
     "module_path": "./lib/binding/",
     "host": "https://mapbox-node-binary.s3.amazonaws.com",
     "remote_path": "./{name}/v{version}/{configuration}/{toolset}/",

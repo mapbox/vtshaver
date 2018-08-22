@@ -8,7 +8,7 @@
     ['AR', '<(module_root_dir)/mason_packages/.link/bin/llvm-ar'],
     ['NM', '<(module_root_dir)/mason_packages/.link/bin/llvm-nm']
   ],
-  'includes': [ 'common.gypi' ], # brings in a default set of options that are inherited from gyp
+  'includes': [ 'common.gypi' ],
   'variables': { # custom variables we use specific to this file
       'error_on_warnings%':'true', # can be overriden by a command line variable because of the % sign using "WERROR" (defined in Makefile)
       # Use this variable to silence warnings from mason dependencies and from NAN
@@ -19,7 +19,7 @@
         "-isystem <(module_root_dir)/mason_packages/.link/include/",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/src",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/platform",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/platform"
       ],
       # Flags we pass to the compiler to ensure the compiler
       # warns us about potentially buggy or dangerous code
@@ -35,18 +35,13 @@
         '-Wuninitialized',
         '-Wunreachable-code',
         '-Wold-style-cast',
-        '-Wno-error=unused-variable'
+        '-Wno-error=unused-variable',
+        '-Wno-error=unused-value',
+        '-DRAPIDJSON_HAS_STDSTRING=1'
       ]
   },
-  # `targets` is a list of targets for gyp to run.
-  # Different types of targets:
-  # - [executable](https://github.com/mapbox/cpp/blob/master/glossary.md#executable)
-  # - [loadable_module](https://github.com/mapbox/cpp/blob/master/glossary.md#loadable-module)
-  # - [static library](https://github.com/mapbox/cpp/blob/master/glossary.md#static-library)
-  # - [shared library](https://github.com/mapbox/cpp/blob/master/glossary.md#shared-library)
-  # - none: a trick to tell gyp not to run the compiler for a given target.
   'targets': [
-    {
+{
       'target_name': 'action_before_build',
       'type': 'none',
       'hard_dependency': 1,
@@ -66,22 +61,18 @@
       ]
     },
     {
-      # module_name and module_path are both variables passed by node-pre-gyp from package.json
-      'target_name': '<(module_name)', # sets the name of the binary file
-      'product_dir': '<(module_path)', # controls where the node binary file gets copied to (./lib/binding/module.node)
-      'type': 'loadable_module',
+      'target_name': '<(module_name)',
       'dependencies': [ 'action_before_build' ],
-      # "make" only watches files specified here, and will sometimes cache these files after the first compile.
-      # This cache can sometimes cause confusing errors when removing/renaming/adding new files.
-      # Running "make clean" helps to prevent this "mysterious error by cache" scenario
-      # This also is where the benefits of using a "glob" come into play...
-      # See: https://github.com/mapbox/node-cpp-skel/pull/44#discussion_r122050205
+      'product_dir': '<(module_path)',
+      'defines': [
+        # we set protozero_assert to avoid the tests asserting
+        # since we test they throw instead
+        'protozero_assert(x)'
+      ],
       'sources': [
-        './src/module.cpp',
-        './src/standalone/hello.cpp',
-        './src/standalone_async/hello_async.cpp',
-        './src/object_sync/hello.cpp',
-        './src/object_async/hello_async.cpp'
+        './src/vtshaver.cpp',
+        './src/shave.cpp',
+        './src/filters.cpp'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
@@ -97,11 +88,26 @@
         ['error_on_warnings == "true"', {
             'cflags_cc' : [ '-Werror' ],
             'xcode_settings': {
-              'OTHER_CPLUSPLUSFLAGS': [ '-Werror' ]
+              'OTHER_CPLUSPLUSFLAGS': [ '-Werror' ],
+              'OTHER_LDFLAGS': ['-framework Foundation']
             }
         }]
       ],
-      'cflags_cc': [
+      "conditions": [
+        [ "OS=='linux'", {
+            "libraries": [
+                     "<(module_root_dir)/mason_packages/.link/lib/libnu.a",
+                     "<(module_root_dir)/mason_packages/.link/lib/libpng.a",
+                     "<(module_root_dir)/mason_packages/.link/lib/libjpeg.a",
+                     "<(module_root_dir)/mason_packages/.link/lib/libwebp.a",
+                     "<(module_root_dir)/mason_packages/.link/lib/libsqlite3.a",
+                     "<(module_root_dir)/mason_packages/.link/lib/libicuuc.a"
+                   ]
+        }]
+      ],
+      # Add to cpp glossary (or other doc in cpp repo) different types of binaries (.node, .a, static, dynamic (.so on linux and .dylib on osx))
+      # talk from cppcon by person from Apple, exploration of every builds systems in c++ are awful since theyre system-specific
+      'cflags': [
           '<@(system_includes)',
           '<@(compiler_checks)'
       ],
@@ -116,11 +122,12 @@
         ],
         'GCC_ENABLE_CPP_RTTI': 'YES',
         'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
-        'MACOSX_DEPLOYMENT_TARGET':'10.8',
+        'MACOSX_DEPLOYMENT_TARGET':'10.10',
         'CLANG_CXX_LIBRARY': 'libc++',
         'CLANG_CXX_LANGUAGE_STANDARD':'c++14',
         'GCC_VERSION': 'com.apple.compilers.llvm.clang.1_0'
       }
+
     }
   ]
 }

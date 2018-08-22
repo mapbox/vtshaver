@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for getting involved and contributing to the skel :tada: Below are a few things to setup when submitting a PR.
+Thanks for getting involved and contributing to the shaver :tada: Below are a few things to setup when submitting a PR.
 
 ## Code comments
 
@@ -8,9 +8,9 @@ If adding new code, be sure to include relevant code comments. Code comments are
 
 ## Update Documentation
 
-Be sure to update any documentation relevant to your change. This includes updating the [CHANGELOG.md](https://github.com/mapbox/node-cpp-skel/blob/master/CHANGELOG.md).
+Be sure to update any documentation relevant to your change. This includes updating the [CHANGELOG.md](https://github.com/mapbox/vtshaver/blob/master/CHANGELOG.md).
 
-## [Code Formatting](/docs/extended-tour.md#clang-tools)
+## [Code Formatting](https://github.com/mapbox/node-cpp-skel/blob/8630d9f07f5ea78b5118c4ecb2fc2f4d310c9d72/docs/extended-tour.md#clang-tools)
 
 We use [this script](/scripts/clang-format.sh#L20) to install a consistent version of [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) to format the code base. The format is automatically checked via a Travis CI build as well. Run the following script locally to ensure formatting is ready to merge:
 

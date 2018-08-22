@@ -90,6 +90,7 @@ matrix:
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
+        - sed -ie 's/20f880e/20f880e-asan/g' mason-versions.ini
         - make sanitize
       # Overrides `before_script` (tests are already run in `make sanitize`)
       before_script:
@@ -100,6 +101,7 @@ matrix:
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
+        - sed -ie 's/20f880e/20f880e-asan/g' mason-versions.ini
         - make sanitize
       # Overrides `before_script` (tests are already run in `make sanitize`)
       before_script:
