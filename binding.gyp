@@ -1,4 +1,13 @@
+# This file inherits default targets for Node addons, see https://github.com/nodejs/node-gyp/blob/master/addon.gypi
 {
+  # https://github.com/springmeyer/gyp/blob/master/test/make_global_settings/wrapper/wrapper.gyp
+  'make_global_settings': [
+    ['CXX', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
+    ['CC', '<(module_root_dir)/mason_packages/.link/bin/clang'],
+    ['LINK', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
+    ['AR', '<(module_root_dir)/mason_packages/.link/bin/llvm-ar'],
+    ['NM', '<(module_root_dir)/mason_packages/.link/bin/llvm-nm']
+  ],
   'includes': [ 'common.gypi' ],
   'variables': { # custom variables we use specific to this file
       'error_on_warnings%':'true', # can be overriden by a command line variable because of the % sign using "WERROR" (defined in Makefile)
@@ -95,13 +104,6 @@
                      "<(module_root_dir)/mason_packages/.link/lib/libicuuc.a"
                    ]
         }]
-      ],
-      "libraries": [
-      # static linking (combining): Take a lib and smoosh it into the thing you're building.
-      # A portable file extension name. Build static lib (.a) then when you're linking,
-      # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
-      # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
-               "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
       ],
       # Add to cpp glossary (or other doc in cpp repo) different types of binaries (.node, .a, static, dynamic (.so on linux and .dylib on osx))
       # talk from cppcon by person from Apple, exploration of every builds systems in c++ are awful since theyre system-specific
