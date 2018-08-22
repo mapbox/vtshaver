@@ -50,15 +50,15 @@ static void CallbackError(const std::string& message, v8::Local<v8::Function> ca
  */
 class AsyncBaton {
   public:
-    uv_work_t request{};  // required
+    uv_work_t request{};                // required
     Nan::Persistent<v8::Function> cb{}; // callback function type (will stay alive until you say it can be destroyed)
     std::string error_name{};
     std::string result{};
 
     /******* BUFFER *******/
-    Nan::Persistent<v8::Object> buffer{};  // Persistent: hey v8, dont destroy this
-    const char* data{};  // * --> pointer...C string (array of chars)
-    std::size_t dataLength{};  // using "std" namespace is best-practice
+    Nan::Persistent<v8::Object> buffer{}; // Persistent: hey v8, dont destroy this
+    const char* data{};                   // * --> pointer...C string (array of chars)
+    std::size_t dataLength{};             // using "std" namespace is best-practice
     std::unique_ptr<std::string> shaved_tile{};
 
     /******* ZOOMS *******/

@@ -1,5 +1,5 @@
 {
-  "name": "@mapbox/vt_shaver",
+  "name": "@mapbox/vtshaver",
   "version": "1.2.3",
   "description": "Project",
   "main": "./lib/index.js",
@@ -30,7 +30,7 @@
     "vtshave": "./bin/vtshave.js"
   },
   "binary": {
-    "module_name": "vt_shaver",
+    "module_name": "vtshaver",
     "module_path": "./lib/binding/",
     "host": "https://mapbox-node-binary.s3.amazonaws.com",
     "remote_path": "./{name}/v{version}/{configuration}/{toolset}/",

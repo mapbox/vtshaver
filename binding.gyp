@@ -70,7 +70,7 @@
         'protozero_assert(x)'
       ],
       'sources': [
-        './src/vt_shaver.cpp',
+        './src/vtshaver.cpp',
         './src/shave.cpp',
         './src/filters.cpp'
       ],
