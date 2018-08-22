@@ -87,25 +87,27 @@ matrix:
     # NOTE: Currently commented out for now due to -fsanitizer=address and moving to pre-compiled GL
     #
     # linux sanitizer build node v6/debug
-    # - os: linux
-    #   env: BUILDTYPE=debug TOOLSET=asan
-    #   node_js: 10
-    #   sudo: required
-    #   # Overrides `install` to set up custom asan flags
-    #   install:
-    #     - make sanitize
-    #   # Overrides `before_script` (tests are already run in `make sanitize`)
-    #   before_script:
+    - os: linux
+      env: BUILDTYPE=debug TOOLSET=asan
+      node_js: 10
+      sudo: required
+      # Overrides `install` to set up custom asan flags
+      install:
+        - sed -ie 's/20f880e/20f880e-asan/g' mason-versions.ini
+        - make sanitize
+      # Overrides `before_script` (tests are already run in `make sanitize`)
+      before_script:
     # osx sanitizer build node v6/debug
-    # - os: osx
-    #   env: BUILDTYPE=debug TOOLSET=asan
-    #   node_js: 10
-    #   sudo: required
-    #   # Overrides `install` to set up custom asan flags
-    #   install:
-    #     - make sanitize
-    #   # Overrides `before_script` (tests are already run in `make sanitize`)
-    #   before_script:
+    - os: osx
+      env: BUILDTYPE=debug TOOLSET=asan
+      node_js: 10
+      sudo: required
+      # Overrides `install` to set up custom asan flags
+      install:
+        - sed -ie 's/20f880e/20f880e-asan/g' mason-versions.ini
+        - make sanitize
+      # Overrides `before_script` (tests are already run in `make sanitize`)
+      before_script:
 
     ## ** Builds that do not get published **
 
