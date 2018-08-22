@@ -91,8 +91,7 @@
            "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
       ],
       'ldflags': [
-        '-Wl,-z,now',
-        '-framework Foundation'
+        '-Wl,-z,now'
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
@@ -108,7 +107,8 @@
       ],
       'xcode_settings': {
         'OTHER_LDFLAGS':[
-          '-Wl,-bind_at_load'
+          '-Wl,-bind_at_load',
+          '-framework Foundation'
         ],
         'OTHER_CPLUSPLUSFLAGS': [
             '<@(system_includes)',
