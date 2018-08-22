@@ -84,15 +84,16 @@ matrix:
       env: BUILDTYPE=debug
       node_js: 6
     # linux sanitizer build node v6/debug
-    - os: linux
-      env: BUILDTYPE=debug TOOLSET=asan
-      node_js: 10
-      sudo: required
-      # Overrides `install` to set up custom asan flags
-      install:
-        - make sanitize
-      # Overrides `before_script` (tests are already run in `make sanitize`)
-      before_script:
+    # NOTE: Currently commented out for now due to -fsanitizer=address and moving to pre-compiled GL
+    # - os: linux
+    #   env: BUILDTYPE=debug TOOLSET=asan
+    #   node_js: 10
+    #   sudo: required
+    #   # Overrides `install` to set up custom asan flags
+    #   install:
+    #     - make sanitize
+    #   # Overrides `before_script` (tests are already run in `make sanitize`)
+    #   before_script:
     # osx sanitizer build node v6/debug
     - os: osx
       env: BUILDTYPE=debug TOOLSET=asan
