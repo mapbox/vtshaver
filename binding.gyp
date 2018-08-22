@@ -16,7 +16,10 @@
       # cflags (linux) and xcode (mac)
       'system_includes': [
         "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/"
+        "-isystem <(module_root_dir)/mason_packages/.link/include/",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/src",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/platform",
       ],
       # Flags we pass to the compiler to ensure the compiler
       # warns us about potentially buggy or dangerous code
@@ -79,6 +82,13 @@
         './src/standalone_async/hello_async.cpp',
         './src/object_sync/hello.cpp',
         './src/object_async/hello_async.cpp'
+      ],
+      "libraries": [
+      # static linking (combining): Take a lib and smoosh it into the thing you're building.
+      # A portable file extension name. Build static lib (.a) then when you're linking,
+      # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
+      # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
+           "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
       ],
       'ldflags': [
         '-Wl,-z,now',
