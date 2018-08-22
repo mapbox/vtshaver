@@ -83,9 +83,6 @@ matrix:
       osx_image: xcode9.3
       env: BUILDTYPE=debug
       node_js: 6
-
-    # NOTE: Currently commented out for now due to -fsanitizer=address and moving to pre-compiled GL
-    #
     # linux sanitizer build node v6/debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
