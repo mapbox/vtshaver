@@ -45,7 +45,7 @@ fs.readdir(p, function (err, files) {
 
 var start = function(files){
     var track_mem = argv.mem ? true : false;
-    var style = require('../test/fixtures/styles/mapbox-streets.json');
+    var style = require('../test/fixtures/styles/expressions.json');
     var filters = new s.Filters(s.styleToFilters(style));
     var options = {
       zoom: 13,
