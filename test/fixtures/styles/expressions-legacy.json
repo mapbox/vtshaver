@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "name": "Expressions Legacy",
+  "layers": [
+    {
+      "id": "landcover",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "landcover",
+      "filter": [
+          "step",
+          ["zoom"],
+          true,
+          7,
+          [ "==", "class", "snow" ]
+        ]
+    },
+    {
+      "id": "tunnel-minor-low",
+      "type": "line",
+      "source": "composite",
+      "source-layer": "road",
+      "filter": [
+          "all",
+          ["==", ["geometry-type"], "LineString"],
+          ["match", ["get", "structure"], "tunnel", true, false],
+          ["step", ["zoom"],
+            ["any",  
+              ["match", ["get", "class"], ["street", "street_limited", "track"], true, false],
+              ["match", ["get", "type"], "primary_link", true, false]
+            ],
+            14,
+            ["any",  
+              ["match", ["get", "class"], ["street", "street_limited", "track", "service"], true, false],
+              ["match", ["get", "type"], ["primary_link", "secondary_link", "tertiary_link"], true, false]
+            ]
+          ]  
+        ]
+    },
+    {
+      "id": "building",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "building",
+      "minzoom": 15,
+      "filter": [ "all", [ "!=", "type", "building:part" ], [ "==", "underground", "false" ] ]
+    },
+    {
+      "id": "tunnel-primary-secondary-tertiary-case",
+      "type": "line",
+      "source": "composite",
+      "source-layer": "road",
+      "filter": [
+        "all",
+        [ "==", "$type", "LineString" ],
+        [ "all", 
+          [ "in", "class", "primary", "secondary", "tertiary" ], 
+          [ "==", "structure", "tunnel" ] ]
+      ]
+    }
+  ]
+}

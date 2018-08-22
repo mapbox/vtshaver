@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "name": "One Feature",
+  "layers": [
+    {
+      "id": "park",
+      "type": "fill",
+      "source": "composite",
+      "source-layer": "landuse",
+      "filter": [ "==", "$id", 0 ]
+    }
+  ]
+}

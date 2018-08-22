@@ -1,0 +1,204 @@
+{
+    "version": 1,
+    "name": "Bright",
+    "layers": [
+        {
+            "id": "landuse_overlay_national_park",
+            "type": "fill",
+            "source-layer": "landuse_overlay",
+            "filter": [
+                "==",
+                "class",
+                "national_park"
+            ]
+        },
+        {
+            "id": "landuse_park",
+            "type": "fill",
+            "source-layer": "landuse",
+            "filter": [
+                "==",
+                "class",
+                "park"
+            ]
+        },
+        {
+            "id": "landuse_school",
+            "type": "fill",
+            "source-layer": "landuse",
+            "filter": [
+                "==",
+                "class",
+                "school"
+            ]
+        },
+        {
+            "id": "landuse_wood",
+            "type": "fill",
+            "source-layer": "landuse",
+            "filter": [
+                "==",
+                "class",
+                "wood"
+            ]
+        },
+        {
+            "layout": {
+                "line-cap": "round"
+            },
+            "filter": [
+                "all",
+                [
+                    "!=",
+                    "class",
+                    "river"
+                ],
+                [
+                    "!=",
+                    "class",
+                    "stream"
+                ],
+                [
+                    "!=",
+                    "class",
+                    "canal"
+                ]
+            ],
+            "type": "line",
+            "id": "waterway",
+            "source-layer": "waterway"
+        },
+        {
+            "layout": {
+                "line-cap": "round"
+            },
+            "filter": [
+                "==",
+                "class",
+                "river"
+            ],
+            "type": "line",
+            "id": "waterway_river",
+            "source-layer": "waterway"
+        },
+        {
+            "layout": {
+                "line-cap": "round"
+            },
+            "filter": [
+                "in",
+                "class",
+                "stream",
+                "canal"
+            ],
+            "type": "line",
+            "id": "waterway_stream_canal",
+            "source-layer": "waterway"
+        },
+        {
+            "id": "water",
+            "type": "fill",
+            "source-layer": "water"
+        },
+        {
+            "id": "water_offset",
+            "ref": "water"
+        },
+        {
+            "minzoom": 11,
+            "filter": [
+                "==",
+                "$type",
+                "Polygon"
+            ],
+            "type": "fill",
+            "id": "aeroway_fill",
+            "source-layer": "aeroway"
+        },
+        {
+            "minzoom": 11,
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "$type",
+                    "LineString"
+                ],
+                [
+                    "==",
+                    "type",
+                    "runway"
+                ]
+            ],
+            "type": "line",
+            "id": "aeroway_runway",
+            "source-layer": "aeroway"
+        },
+        {
+            "interactive": true,
+            "minzoom": 11,
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "$type",
+                    "LineString"
+                ],
+                [
+                    "==",
+                    "type",
+                    "taxiway"
+                ]
+            ],
+            "type": "line",
+            "id": "aeroway_taxiway",
+            "source-layer": "aeroway"
+        },
+        {
+            "interactive": true,
+            "layout": {
+                "line-join": "round",
+                "visibility": "visible"
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "structure",
+                    "tunnel"
+                ],
+                [
+                    "==",
+                    "class",
+                    "motorway_link"
+                ]
+            ],
+            "type": "line",
+            "id": "tunnel_motorway_link_casing",
+            "source-layer": "road"
+        },
+        {
+            "interactive": true,
+            "layout": {
+                "line-join": "round"
+            },
+            "filter": [
+                "all",
+                [
+                    "==",
+                    "structure",
+                    "tunnel"
+                ],
+                [
+                    "in",
+                    "class",
+                    "secondary",
+                    "tertiary"
+                ]
+            ],
+            "type": "line",
+            "id": "tunnel_secondary_tertiary_casing",
+            "source-layer": "road"
+        }
+    ]
+}

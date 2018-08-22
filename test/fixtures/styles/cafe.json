@@ -1,0 +1,21 @@
+{
+	"version": 1,
+	"name": "cafe",
+	"center": [ 
+	    -122.51238479904751,
+	    37.77981694417855
+	],
+	"zoom": 16.5252340340155,
+	"bearing": 0,
+	"pitch": 0,
+	"layers": [
+		{
+			"filter": ["==","maki","cafe"],
+			"type": "symbol",
+			"source": "composite",
+			"id": "poi-scalerank1",
+			"source-layer": "poi_label"
+		}
+	],
+	"owner": "greta"
+}

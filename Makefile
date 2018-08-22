@@ -82,6 +82,7 @@ testpack:
 	rm -f ./*tgz
 	npm pack
 	tar -ztvf *tgz
+	rm -f ./*tgz
 
 docs:
 	npm run docs
