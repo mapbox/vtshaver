@@ -92,6 +92,7 @@
       ],
       'ldflags': [
         '-Wl,-z,now',
+        '-framework Foundation'
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
