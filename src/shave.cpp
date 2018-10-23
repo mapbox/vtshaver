@@ -62,8 +62,8 @@ class AsyncBaton {
     std::unique_ptr<std::string> shaved_tile{};
 
     /******* ZOOMS *******/
-    double zoom{};
-    optional<double> maxzoom{};
+    float zoom{};
+    optional<float> maxzoom{};
 
     /******* whether to compress *******/
     bool compress = false;
@@ -196,10 +196,10 @@ NAN_METHOD(shave) {
         baton->data = node::Buffer::Data(buffer);
         baton->dataLength = node::Buffer::Length(buffer);
         baton->shaved_tile = std::make_unique<std::string>();
-        // we convert to double here since comparison is against
-        // doubles as styles support fractional zooms
-        baton->zoom = static_cast<double>(zoom);
-        baton->maxzoom = maxzoom ? *maxzoom : optional<double>();
+        // we convert to float here since comparison is against
+        // floating point value as styles support fractional zooms
+        baton->zoom = static_cast<float>(zoom);
+        baton->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : optional<float>();
         baton->compress = compress;
         // TODO(alliecrevier): pass compress_type and compress_level once we add support for more than gzip with default level: https://github.com/mapbox/gzip-hpp/blob/832d6262cecaa3b85c3c242e3617b4cfdbf3de23/include/gzip/compress.hpp#L19
         baton->filters_obj = Nan::ObjectWrap::Unwrap<Filters>(filters_object); // "Unwrap" takes the Javascript object and gives us the C++ object (gets rid of JS wrapper)
@@ -237,10 +237,6 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
           ftype_(ftype) {
     }
 
-    struct PropertyValueMapping : vtzero::property_value_mapping {
-        using float_type = double;
-    };
-
     mbgl::FeatureType getType() const override {
         return ftype_;
     }
@@ -256,7 +252,7 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
         std::unordered_map<std::string, mbgl::Value> map;
 
         feature_.for_each_property([&](const vtzero::property& prop) {
-            map.emplace(std::string(prop.key()), vtzero::convert_property_value<mapbox::geometry::value, PropertyValueMapping>(prop.value()));
+            map.emplace(std::string(prop.key()), vtzero::convert_property_value<mapbox::geometry::value, mapping>(prop.value()));
             return true;
         });
 
@@ -288,12 +284,13 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
 };
 
 static bool evaluate(mbgl::style::Filter const& filter,
+                     float zoom,
                      mbgl::FeatureType ftype,
                      vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
 {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
     // std::string const& key is dynamic and comes from the Filter object
-    mbgl::style::expression::EvaluationContext context(&geomfeature);
+    mbgl::style::expression::EvaluationContext context(zoom, &geomfeature);
     return filter(context);
 }
 
@@ -313,6 +310,7 @@ static mbgl::FeatureType convertGeom(vtzero::GeomType geometry_type) {
 }
 
 void filterFeatures(vtzero::tile_builder* finalvt,
+                    float zoom,
                     vtzero::layer const& layer,
                     mbgl::style::Filter const& mbgl_filter_obj) {
     /**
@@ -332,7 +330,7 @@ void filterFeatures(vtzero::tile_builder* finalvt,
 
         // If evaluate() returns true, this feature includes properties that are relevant to the filter.
         // So we add the feature to the final layer.
-        if (evaluate(mbgl_filter_obj, geometry_type, feature)) {
+        if (evaluate(mbgl_filter_obj, zoom, geometry_type, feature)) {
             vtzero::geometry_feature_builder feature_builder{layer_builder};
             if (feature.has_id()) {
                 feature_builder.set_id(feature.id());
@@ -396,7 +394,7 @@ void AsyncShave(uv_work_t* req) {
                         finalvt.add_existing_layer(layer); // Add to new tile
                     } else {
                         // Ampersand in front of var: "Pass as pointers"
-                        filterFeatures(&finalvt, layer, mbgl_filter_obj);
+                        filterFeatures(&finalvt, baton->zoom, layer, mbgl_filter_obj);
                     }
                 }
             }
