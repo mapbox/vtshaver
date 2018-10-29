@@ -49,7 +49,7 @@ var fs = require('fs');
 
 var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
 var style = require('/path/to/style.json');
-var filters = shaver.styleToFilters(style);
+var filters = new shaver.Filters(shaver.styleToFilters(style));
 
 var options = {
     filters: filters,  // required
