@@ -33,7 +33,7 @@ void Filters::Initialize(v8::Local<v8::Object> target) {
  * @class Filters
  * @example
  * var Shaver = require('../lib/index.js');
- * var filters = Shaver.styleToFilters(style);
+ * var filters = new shaver.Filters(shaver.styleToFilters(style));
  * var filtersRef = new Shaver.Filters(<filters array>);
  * Shaver.shave(buffer, options, filtersRef, function() {
  *   // yada yada

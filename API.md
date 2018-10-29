@@ -2,103 +2,45 @@
 
 ### Table of Contents
 
--   [HelloObjectAsync](#helloobjectasync)
-    -   [helloAsync](#helloasync)
--   [HelloObject](#helloobject)
-    -   [hello](#hello)
--   [helloAsync](#helloasync-1)
--   [hello](#hello-1)
+-   [Filters](#filters)
+-   [shave](#shave)
 
-## HelloObjectAsync
+## Filters
 
-Asynchronous class, called HelloObjectAsync
+Main class, called Filters
 
 **Examples**
 
 ```javascript
-var module = require('index.js');
-var Obj = new module.HelloObjectAsync('greg');
-```
-
-### helloAsync
-
-Say hello while doing expensive work in threads
-
-**Parameters**
-
--   `args` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** different ways to alter the string
-    -   `args.louder` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** adds exclamation points to the string
--   `callback` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** from whence the hello comes, returns a string
-
-**Examples**
-
-```javascript
-var module = require('index.js');
-var Obj = new module.HelloObjectAsync('greg');
-Obj.helloAsync({ louder: true }, function(err, result) {
-  if (err) throw err;
-  console.log(result); // => '...threads are busy async bees...hello greg!!!'
+var Shaver = require('../lib/index.js');
+var filters = new shaver.Filters(shaver.styleToFilters(style));
+var filtersRef = new Shaver.Filters(<filters array>);
+Shaver.shave(buffer, options, filtersRef, function() {
+  // yada yada
 });
 ```
 
-Returns **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
+## shave
 
-## HelloObject
-
-Synchronous class, called HelloObject
-
-**Examples**
-
-```javascript
-var module = require('index.js');
-var Obj = new module.HelloObject('greg');
-```
-
-### hello
-
-Say hello
-
-**Examples**
-
-```javascript
-var x = Obj.hello();
-console.log(x); // => '...initialized an object...hello greg'
-```
-
-Returns **[String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
-
-## helloAsync
-
-This is an asynchronous standalone function that logs a string.
+Shave off unneeded layers and features, asynchronously
 
 **Parameters**
 
--   `args` **[Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object)** different ways to alter the string
-    -   `args.louder` **[boolean](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** adds exclamation points to the string
--   `callback` **[Function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function)** from whence the hello comes, returns a string
+-   `buffer` **[Buffer](https://nodejs.org/api/buffer.html)** Vector Tile PBF
+-   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
+    -   `options.zoom` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)**  (optional, default `0`)
+-   `callback` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** from whence the shaven vector tile comes
 
 **Examples**
 
 ```javascript
-var module = require('./path/to/lib/index.js');
-module.helloAsync({ louder: true }, function(err, result) {
+var filters = {
+  "source-layer": "poi_label",
+  "filter": ["==","maki","cafe"]
+}
+
+shave(buffer, {filters: {}, zoom: 4}, function(err, shaved_pbf) {
   if (err) throw err;
-  console.log(result); // => "...threads are busy async bees...hello world!!!!"
+  console.log(shaved_pbf); // => '< encoded gobbledy guk... >'
 });
 ```
-
-Returns **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
-
-## hello
-
-This is a synchronous standalone function that logs a string.
-
-**Examples**
-
-```javascript
-var module = require('./path/to/lib/index.js');
-var check = module.hello();
-console.log(check); // => "hello world"
-```
-
-Returns **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
