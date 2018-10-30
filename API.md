@@ -7,17 +7,21 @@
 
 ## Filters
 
-Main class, called Filters
+Takes optimized filter object from shaver.styleToFilters and returns c++ filters for shave.
+
+**Parameters**
+
+-   `filters` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** the filter object from the `shaver.styleToFilters`
 
 **Examples**
 
 ```javascript
-var Shaver = require('../lib/index.js');
-var filters = new shaver.Filters(shaver.styleToFilters(style));
-var filtersRef = new Shaver.Filters(<filters array>);
-Shaver.shave(buffer, options, filtersRef, function() {
-  // yada yada
-});
+var shaver = require('../lib/index.js');
+var style = require('/path/to/style.json');
+// get the filters object from `styleToFilters`
+var styleFilters = shaver.styleToFilters(style);
+// call the function to create filters
+var filters = new shaver.Filters(styleFilters);
 ```
 
 ## shave
@@ -28,19 +32,31 @@ Shave off unneeded layers and features, asynchronously
 
 -   `buffer` **[Buffer](https://nodejs.org/api/buffer.html)** Vector Tile PBF
 -   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
-    -   `options.zoom` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)**  (optional, default `0`)
+    -   `options.zoom` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** 
+    -   `options.maxzoom` **[Number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)?** 
+    -   `options.compress` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** 
+        -   `options.compress.type` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** output a compressed shaved ['none'|'gzip']
 -   `callback` **[Function](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/function)** from whence the shaven vector tile comes
 
 **Examples**
 
 ```javascript
-var filters = {
-  "source-layer": "poi_label",
-  "filter": ["==","maki","cafe"]
-}
+var fs = require('fs');
+var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
+var style = require('/path/to/style.json');
+var filters = new shaver.Filters(shaver.styleToFilters(style));
 
-shave(buffer, {filters: {}, zoom: 4}, function(err, shaved_pbf) {
-  if (err) throw err;
-  console.log(shaved_pbf); // => '< encoded gobbledy guk... >'
+var options = {
+    filters: filters,  // required
+    zoom: 14,          // required
+    maxzoom: 16,       // optional
+    compress: {        // optional
+        type: 'none'
+    }
+};
+
+shaver.shave(buffer, options, function(err, shavedTile) {
+    if (err) throw err;
+    console.log(shavedTile); // => vector tile buffer
 });
 ```
