@@ -64,6 +64,7 @@ class AsyncBaton {
  * @param {String} options.compress.type output a compressed shaved ['none'|'gzip']
  * @param {Function} callback - from whence the shaven vector tile comes
  * @example
+ * var shaver = require('@mapbox/vtshaver');
  * var fs = require('fs');
  * var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
  * var style = require('/path/to/style.json');

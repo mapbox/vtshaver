@@ -33,7 +33,7 @@ void Filters::Initialize(v8::Local<v8::Object> target) {
  * @class Filters
  * @param {Object} filters - the filter object from the `shaver.styleToFilters`
  * @example
- * var shaver = require('../lib/index.js');
+ * var shaver = require('@mapbox/vtshaver');
  * var style = require('/path/to/style.json');
  * // get the filters object from `styleToFilters`
  * var styleFilters = shaver.styleToFilters(style);

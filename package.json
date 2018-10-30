@@ -10,7 +10,9 @@
   "scripts": {
     "test": "tape test/*.test.js",
     "install": "node-pre-gyp install --fallback-to-build",
-    "docs": "documentation build src/*.cpp --polyglot -f md -o API.md"
+    "docs":"npm run docs-cpp && npm run docs-js",
+    "docs-cpp": "documentation build lib/styleToFilters.js src/*.cpp --re --polyglot -f md -o API-CPP.md",
+    "docs-js": "documentation build lib/styleToFilters.js -f md -o API-JavaScript.md"
   },
   "author": "Mapbox",
   "license": "ISC",

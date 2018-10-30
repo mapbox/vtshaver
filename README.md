@@ -16,6 +16,10 @@ npm install @mapbox/vtshaver
 
 # Usage
 
+* [styleToFilters](API-JavaScript.md#styletofilters)
+* [styleToFilters](API-CPP.md#filters)
+* [styleToFilters](API-CPP.md#shave)
+
 ### `require`
 
 ```javascript
