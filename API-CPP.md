@@ -16,7 +16,7 @@ Takes optimized filter object from shaver.styleToFilters and returns c++ filters
 **Examples**
 
 ```javascript
-var shaver = require('../lib/index.js');
+var shaver = require('@mapbox/vtshaver');
 var style = require('/path/to/style.json');
 // get the filters object from `styleToFilters`
 var styleFilters = shaver.styleToFilters(style);
@@ -41,6 +41,7 @@ Shave off unneeded layers and features, asynchronously
 **Examples**
 
 ```javascript
+var shaver = require('@mapbox/vtshaver');
 var fs = require('fs');
 var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
 var style = require('/path/to/style.json');

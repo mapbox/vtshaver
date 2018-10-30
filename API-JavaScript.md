@@ -15,6 +15,7 @@ Takes optimized filter object from shaver.styleToFilters and returns c++ filters
 **Examples**
 
 ```javascript
+var shaver = require('@mapbox/vtshaver');
 var style = require('/path/to/style.json');
 var filters = shaver.styleToFilters(style);
 console.log(filters);
