@@ -8,6 +8,7 @@ var fs = require('fs');
 
 var buffer = fs.readFileSync('./test/fixtures/tiles/sf_16_10465_25329.vector.pbf');
 var style = require('./test/fixtures/styles/bright-v9.json');
+console.log(shaver.styleToFilters(style))
 var filters = new shaver.Filters(shaver.styleToFilters(style));
 // console.log(shaver.styleToFilters(style))
 
