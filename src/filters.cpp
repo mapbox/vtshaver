@@ -33,40 +33,41 @@ void Filters::Initialize(v8::Local<v8::Object> target) {
 std::ostream& operator<<(std::ostream& os, const mapbox::geometry::null_value_t&) {
     return os << "<null>";
 }
- std::ostream& operator<<(std::ostream& os, const mapbox::geometry::value& value) {
+std::ostream& operator<<(std::ostream& os, const mapbox::geometry::value& value) {
     value.match(
-        [&os] (const std::vector<mapbox::geometry::value>& array) {
+        [&os](const std::vector<mapbox::geometry::value>& array) {
             os << "[";
             bool first = true;
             for (const auto& v : array) {
-                if (first) first = false; else os << ",";
+                if (first)
+                    first = false;
+                else
+                    os << ",";
                 os << v;
             }
             os << "]";
         },
-        [&os] (const mapbox::geometry::property_map& map) {
+        [&os](const mapbox::geometry::property_map& map) {
             for (const auto& kv : map) {
                 os << "  - " << kv.first << ":" << kv.second << std::endl;
             }
         },
-        [&os] (const auto& other) {
+        [&os](const auto& other) {
             os << other;
-        }
-    );
+        });
     return os;
 }
 
 void print_filter(mbgl::style::Filter const& filter) {
-  // first serialize it to a mbgl::value
-  // https://github.com/mapbox/mapbox-gl-native/blob/3f314682fa2f2701c0d1c7e863013ce254a23afd/include/mbgl/style/filter.hpp#L43-L51
-  auto filter_value = filter.serialize();
-  // then print out the variant representing the mbgl::Value
-  // this works do to the magic
-  //    std::ostream& operator<<(std::ostream& os, const mapbox::geometry::value& value)
-  // located above
-  std::clog << filter_value << "\n";
- }
-
+    // first serialize it to a mbgl::value
+    // https://github.com/mapbox/mapbox-gl-native/blob/3f314682fa2f2701c0d1c7e863013ce254a23afd/include/mbgl/style/filter.hpp#L43-L51
+    auto filter_value = filter.serialize();
+    // then print out the variant representing the mbgl::Value
+    // this works do to the magic
+    //    std::ostream& operator<<(std::ostream& os, const mapbox::geometry::value& value)
+    // located above
+    std::clog << filter_value << "\n";
+}
 
 /**
  * Main class, called Filters
