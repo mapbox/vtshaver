@@ -16,78 +16,9 @@ npm install @mapbox/vtshaver
 
 # Usage
 
-### `require`
-
-```javascript
-var shaver = require('@mapbox/vtshaver');
-```
-
-### `styleToFilters(style)`
-
-Takes a Mapbox GL Style JSON and returns an optimized filter object for use within the shaver.
-- Layers that are styled using filters, the filters are stored in an array.
-- Layers that are styled but dont contain filters will return `true`.
-
-```javascript
-var style = require('/path/to/style.json');
-var filters = shaver.styleToFilters(style);
-console.log(filters);
-// {
-//   "poi_label": ["!=","maki","cafe"],
-//   "road": ["==","class","path"],
-//   "water": true,
-//   ...
-// }
-```
-
-### `shave(tile, options, callback)`
-
-Takes a Mapbox Vector Tile `.mvt` buffer and compares it to a Mapbox GL Style-based filter object to remove unused layers and features. You can create a filter object with the `shave.styleToFilters()` method.
-
-```javascript
-var fs = require('fs');
-
-var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
-var style = require('/path/to/style.json');
-var filters = new shaver.Filters(shaver.styleToFilters(style));
-
-var options = {
-    filters: filters,  // required
-    zoom: 14,          // required
-    maxzoom: 16,       // optional
-    compress: {        // optional
-      type: 'none'
-    }
-};
-
-shaver.shave(buffer, options, function(err, shavedTile) {
-  if (err) throw err;
-  console.log(shavedTile); // => vector tile buffer
-});
-```
-
-Optionally set compression option if you'd like shaver to output a compressed shaved tile.
-```javascript
-var fs = require('fs');
-
-var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
-var style = require('/path/to/style.json');
-var filters = shaver.styleToFilters(style);
-
-var options = {
-    filters: filters,  // required
-    zoom: 14,          // required
-    maxzoom: 16,       // optional
-    compress: {        // optional
-      type: 'gzip'
-    }
-};
-
-shaver.shave(buffer, options, function(err, shavedTile) {
-  if (err) throw err;
-  console.log(shavedTile); // => gzip compressed vector tile buffer
-});
-```
+* [styleToFilters](API-JavaScript.md#styletofilters)
+* [Filters](API-CPP.md#filters)
+* [shave](API-CPP.md#shave)
 
 # CLI
 ```

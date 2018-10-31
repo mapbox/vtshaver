@@ -29,15 +29,16 @@ void Filters::Initialize(v8::Local<v8::Object> target) {
 }
 
 /**
- * Main class, called Filters
+ * Takes optimized filter object from shaver.styleToFilters and returns c++ filters for shave.
  * @class Filters
+ * @param {Object} filters - the filter object from the `shaver.styleToFilters`
  * @example
- * var Shaver = require('../lib/index.js');
- * var filters = Shaver.styleToFilters(style);
- * var filtersRef = new Shaver.Filters(<filters array>);
- * Shaver.shave(buffer, options, filtersRef, function() {
- *   // yada yada
- * });
+ * var shaver = require('@mapbox/vtshaver');
+ * var style = require('/path/to/style.json');
+ * // get the filters object from `styleToFilters`
+ * var styleFilters = shaver.styleToFilters(style);
+ * // call the function to create filters
+ * var filters = new shaver.Filters(styleFilters);
  */
 NAN_METHOD(Filters::New) {
     if (!info.IsConstructCall()) {

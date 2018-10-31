@@ -28,26 +28,6 @@ static void CallbackError(const std::string& message, v8::Local<v8::Function> ca
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callback, 1, static_cast<v8::Local<v8::Value>*>(argv));
 }
 
-/**
- * Shave off unneeded layers and features, asynchronously
- *
- * @name shave
- * @param {Buffer} buffer - Vector Tile PBF
- * @param {Object} [options={}]
- * @param {Number} [options.zoom=0]
- * @param {Function} callback - from whence the shaven vector tile comes
- * @example
- * var filters = {
- *   "source-layer": "poi_label",
- *   "filter": ["==","maki","cafe"]
- * }
- *
- * shave(buffer, {filters: {}, zoom: 4}, function(err, shaved_pbf) {
- *   if (err) throw err;
- *   console.log(shaved_pbf); // => '< encoded gobbledy guk... >'
- * });
- *
- */
 class AsyncBaton {
   public:
     uv_work_t request{};                // required
@@ -72,6 +52,38 @@ class AsyncBaton {
     Filters* filters_obj{};
 };
 
+/**
+ * Shave off unneeded layers and features, asynchronously
+ *
+ * @name shave
+ * @param {Buffer} buffer - Vector Tile PBF
+ * @param {Object} [options={}]
+ * @param {Number} [options.zoom]
+ * @param {Number} [options.maxzoom]
+ * @param {Object} [options.compress]
+ * @param {String} options.compress.type output a compressed shaved ['none'|'gzip']
+ * @param {Function} callback - from whence the shaven vector tile comes
+ * @example
+ * var shaver = require('@mapbox/vtshaver');
+ * var fs = require('fs');
+ * var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
+ * var style = require('/path/to/style.json');
+ * var filters = new shaver.Filters(shaver.styleToFilters(style));
+ * 
+ * var options = {
+ *     filters: filters,  // required
+ *     zoom: 14,          // required
+ *     maxzoom: 16,       // optional
+ *     compress: {        // optional
+ *         type: 'none'
+ *     }
+ * };
+ * 
+ * shaver.shave(buffer, options, function(err, shavedTile) {
+ *     if (err) throw err;
+ *     console.log(shavedTile); // => vector tile buffer
+ * });
+ */
 NAN_METHOD(shave) {
     // CALLBACK: ensure callback is a function
     v8::Local<v8::Value> callback_val = info[info.Length() - 1];
