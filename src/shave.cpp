@@ -73,6 +73,7 @@ class AsyncBaton {
 };
 
 NAN_METHOD(shave) {
+    std::cout << "-----------NAN_METHOD shave" << std::endl;
     // CALLBACK: ensure callback is a function
     v8::Local<v8::Value> callback_val = info[info.Length() - 1];
     if (!callback_val->IsFunction() || callback_val->IsNull() || callback_val->IsUndefined()) {
