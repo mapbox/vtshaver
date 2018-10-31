@@ -449,7 +449,7 @@ void AsyncShave(uv_work_t* req) {
             std::cout << "xxxxxxxxxxxxxxxxxxxxxxx" << std::endl;
             std::cout << std::get<1>(active_filters.end()->second) << std::endl;
             std::cout << std::get<2>(active_filters.end()->second) << std::endl;
-            print_filter(std::get<0>(active_filters.end()->second))
+            // print_filter(std::get<0>(active_filters.end()->second))
             
             if (filter_itr != active_filters.end()) {
                 auto const& filter = filter_itr->second;
