@@ -350,9 +350,14 @@ void filterFeatures(vtzero::tile_builder* finalvt,
                 feature_builder.set_id(feature.id());
             }
             feature_builder.set_geometry(feature.geometry());
-            while (auto idxs = feature.next_property_indexes()) {
-                feature_builder.add_property(mapper(idxs));
+            while (auto property = feature.next_property()) {
+                std::cout << std::string(property.key()) << std::endl;
+                feature_builder.add_property(property);
             }
+            // while (auto idxs = feature.next_property_indexes()) {
+            //     auto property = mapper(idxs);
+            //     feature_builder.add_property(property);
+            // }
             feature_builder.commit();
         }
 
