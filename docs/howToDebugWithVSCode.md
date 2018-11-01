@@ -70,4 +70,6 @@ Now go to any c++ files and click the left side of the line number to add an bre
 
 ![howtodebug](./image/howtodebug2.png)
 
-Now everything is done! Debug is Done!
+Now everything is done! Debug is Done! The program will stop at the break point, and you can use your mouse to explore the variable, you can naverage the program use the top control box. 
+
+![howtodebug](./image/howtodebug3.png)
