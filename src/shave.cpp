@@ -25,45 +25,6 @@
 
 
 
-// std::ostream& operator<<(std::ostream& os, const mapbox::geometry::null_value_t&) {
-//     return os << "<null>";
-// }
-// std::ostream& operator<<(std::ostream& os, const mapbox::geometry::value& value) {
-//     value.match(
-//         [&os](const std::vector<mapbox::geometry::value>& array) {
-//             os << "[";
-//             bool first = true;
-//             for (const auto& v : array) {
-//                 if (first)
-//                     first = false;
-//                 else
-//                     os << ",";
-//                 os << v;
-//             }
-//             os << "]";
-//         },
-//         [&os](const mapbox::geometry::property_map& map) {
-//             for (const auto& kv : map) {
-//                 os << "  - " << kv.first << ":" << kv.second << std::endl;
-//             }
-//         },
-//         [&os](const auto& other) {
-//             os << other;
-//         });
-//     return os;
-// }
-
-// void print_filter(mbgl::style::Filter const& filter) {
-//     // first serialize it to a mbgl::value
-//     // https://github.com/mapbox/mapbox-gl-native/blob/3f314682fa2f2701c0d1c7e863013ce254a23afd/include/mbgl/style/filter.hpp#L43-L51
-//     auto filter_value = filter.serialize();
-//     // then print out the variant representing the mbgl::Value
-//     // this works do to the magic
-//     //    std::ostream& operator<<(std::ostream& os, const mapbox::geometry::value& value)
-//     // located above
-//     std::clog << filter_value << "\n";
-// }
-
 static void CallbackError(const std::string& message, v8::Local<v8::Function> callback) {
     v8::Local<v8::Value> argv[1] = {Nan::Error(message.c_str())};
     Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callback, 1, static_cast<v8::Local<v8::Value>*>(argv));
@@ -424,35 +385,25 @@ void AsyncShave(uv_work_t* req) {
 
             // Using https://github.com/mapbox/protozero/blob/master/include/protozero/data_view.hpp#L129 to convert data_view to string
             /**
-             { landuse_overlay: { filters: [ 'any', [Array] ], minzoom: 0, maxzoom: 22 },
-                landuse: 
-                { filters: [ 'any', [Array], [Array], [Array] ],
-                    minzoom: 0,
-                    maxzoom: 22 },
-                waterway: 
-                { filters: [ 'any', [Array], [Array], [Array] ],
-                    minzoom: 0,
-                    maxzoom: 22 },
-                water: { filters: true, minzoom: 0, maxzoom: 22 },
-                aeroway: 
-                { filters: [ 'any', [Array], [Array], [Array] ],
-                    minzoom: 11,
-                    maxzoom: 22 },
-                road: { filters: [ 'any', [Array], [Array] ], minzoom: 0, maxzoom: 22 } }
-
-
-                water: { filters: true, minzoom: 0, maxzoom: 22 }
-                */
+             { water: { filters: true, minzoom: 0, maxzoom: 22 }
+            */
             auto filter_itr = active_filters.find(std::string{layer.name()}); // TODO(carol): Convert filter_key_type to data_view, in src/filters.hpp)
 
             // If the filter is found for this layer name, continue to filter features within this layer
             std::cout << "xxxxxxxxxxxxxxxxxxxxxxx" << std::endl;
+            // std::cout << active_filters.end()->second << std::endl;
+            std::cout << std::get<1>(filter_itr->second) << std::endl;
+            std::cout << std::get<2>(filter_itr->second) << std::endl;
             std::cout << std::get<1>(active_filters.end()->second) << std::endl;
             std::cout << std::get<2>(active_filters.end()->second) << std::endl;
             // print_filter(std::get<0>(active_filters.end()->second))
             
+            // here filter is the filter by layer name
             if (filter_itr != active_filters.end()) {
                 auto const& filter = filter_itr->second;
+                // { filters: [ 'any', [Array], [Array], [Array] ],
+                //     minzoom: 11,
+                //     maxzoom: 22 }
 
                 // get info from tuple
                 auto const& mbgl_filter_obj = std::get<0>(filter);
