@@ -353,6 +353,9 @@ void filterFeatures(vtzero::tile_builder* finalvt,
             while (auto idxs = feature.next_property_indexes()) {
                 feature_builder.add_property(mapper(idxs));
             }
+            // while (auto idxs = feature.next_property_indexes()) {
+            //     feature_builder.add_property(mapper(idxs));
+            // }
             feature_builder.commit();
         }
 
