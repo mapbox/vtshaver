@@ -10,7 +10,7 @@
   "scripts": {
     "test": "tape test/*.test.js",
     "install": "node-pre-gyp install --fallback-to-build",
-    "docs":"npm run docs-cpp && npm run docs-js",
+    "docs": "npm run docs-cpp && npm run docs-js",
     "docs-cpp": "documentation build src/*.cpp --re --polyglot -f md -o API-CPP.md",
     "docs-js": "documentation build lib/styleToFilters.js -f md -o API-JavaScript.md",
     "build:dev": "make debug"
@@ -18,6 +18,7 @@
   "author": "Mapbox",
   "license": "ISC",
   "dependencies": {
+    "@mapbox/mapbox-gl-style-spec": "^13.3.0",
     "@mapbox/vector-tile": "^1.3.0",
     "mason-js-sdk": "~0.1.4",
     "minimist": "^1.2.0",

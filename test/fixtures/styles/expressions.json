@@ -9,7 +9,15 @@
       "filter": ["match", ["get", "class"],
         ["airport", "cemetery", "hospital", "park", "pitch", "sand", "school"], true, false
       ],
-      "paint": { "line-cap": "round" }
+      "paint": {
+        "line-cap": "round",
+        "expression-test4": ["feature-state", "underground4"],
+        "expression-test3": ["==", ["feature-state", "underground"], "false"],
+        "expression-test2": ["==", ["has", "underground"], "false"],
+        "expression-test": ["==", ["get", "underground1"], "false"],
+        "expression-test2-fake": ["==", ["has", "underground1", { "obj": 1 }], "false"],
+        "expression-test-fake": ["==", ["get", "underground", { "obj": 1 }], "false"]
+      }
     },
     {
       "id": "water-shadow",
@@ -42,7 +50,8 @@
         ]
       ],
       "layout": {
-        "icon-image": "{maki}-{what}-{ever}"
+        "icon-image": "{maki}-{what}-{ever}",
+        "expression-test4": ["==", ["properties"], "false"]
       }
     },
     {
