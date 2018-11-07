@@ -27,7 +27,7 @@ test('min/max zoom defaults are set if the do not exist', function(t) {
         'source-layer':'water'
       }
     ]
-  }), {water: {filters: true, minzoom: 0, maxzoom: 22}}, 'returns water:true for only water layer and includes min/max zoom');
+  }), {water: {filters: true, minzoom: 0, maxzoom: 22, properties: []}}, 'returns water:true for only water layer and includes min/max zoom');
   t.end();
 });
 
@@ -41,7 +41,7 @@ test('simple style layers', function(t) {
         maxzoom: 15
       }
     ]
-  }), {water: {filters: true, minzoom: 10, maxzoom: 15}}, 'returns water:true for only water layer and includes min/max zoom');
+  }), {water: {filters: true, minzoom: 10, maxzoom: 15, properties: []}}, 'returns water:true for only water layer and includes min/max zoom');
 
   t.deepEqual(styleToFilter({
     layers: [
@@ -50,7 +50,7 @@ test('simple style layers', function(t) {
         filter: ['==','color','blue']
       }
     ]
-  }), {water: {filters: ['any',['==','color','blue']], minzoom: 0, maxzoom: 22}}, 'returns water:filter for water layer with filter');
+  }), {water: {filters: ['any',['==','color','blue']], minzoom: 0, maxzoom: 22, properties: []}}, 'returns water:filter for water layer with filter');
 
   t.deepEqual(styleToFilter({
     layers: [
@@ -62,7 +62,7 @@ test('simple style layers', function(t) {
         filter: ['==','color','blue']
       }
     ]
-  }), {water:{filters: true, minzoom: 0, maxzoom: 22}}, 'returns water:filter for multiple water layers, some with filters');
+  }), {water:{filters: true, minzoom: 0, maxzoom: 22, properties: []}}, 'returns water:filter for multiple water layers, some with filters');
 
   t.deepEqual(styleToFilter({
     layers: [
@@ -79,7 +79,7 @@ test('simple style layers', function(t) {
         maxzoom: 16
       }
     ]
-  }), {water: {filters: ['any',['!=','color','blue'],['==','color','blue']], minzoom: 8, maxzoom: 16}}, 'returns water:filter for multiple water filters, and updates min/max zoom for smallest/largest values');
+  }), {water: {filters: ['any',['!=','color','blue'],['==','color','blue']], minzoom: 8, maxzoom: 16, properties: []}}, 'returns water:filter for multiple water filters, and updates min/max zoom for smallest/largest values');
 
   t.deepEqual(styleToFilter({
     layers: [
@@ -94,7 +94,7 @@ test('simple style layers', function(t) {
         filter: ['==','color','blue']
       }
     ]
-  }), {water: {filters: ['any',['!=','color','blue'],['==','color','blue']], minzoom: 0, maxzoom: 22}}, 'returns water:filter for multiple water filters, and updates min/max zoom to 0 and 22 if one filter doesn\'t have zooms');
+  }), {water: {filters: ['any',['!=','color','blue'],['==','color','blue']], minzoom: 0, maxzoom: 22, properties: []}}, 'returns water:filter for multiple water filters, and updates min/max zoom to 0 and 22 if one filter doesn\'t have zooms');
 
   t.deepEqual(styleToFilter({
     layers: [
@@ -107,7 +107,7 @@ test('simple style layers', function(t) {
         filter: ['==','color','blue']
       }
     ]
-  }), {water: {filters: ['any',['!=','color','blue'],['==','color','blue']], minzoom: 0, maxzoom: 22}}, 'returns water:filter for multiple water layers with filters');
+  }), {water: {filters: ['any',['!=','color','blue'],['==','color','blue']], minzoom: 0, maxzoom: 22, properties: []}}, 'returns water:filter for multiple water layers with filters');
 
   t.deepEqual(styleToFilter({
     layers: [
@@ -120,7 +120,7 @@ test('simple style layers', function(t) {
         filter: ['==','color','blue']
       }
     ]
-  }), {water: {filters: ['any',['!=','color','blue']], minzoom: 0, maxzoom: 22},landcover: {filters: ['any',['==','color','blue']], minzoom: 0, maxzoom: 22}}, 'returns right filters for multiple layers with filters');
+  }), {water: {filters: ['any',['!=','color','blue']], minzoom: 0, maxzoom: 22, properties: []},landcover: {filters: ['any',['==','color','blue']], minzoom: 0, maxzoom: 22, properties: []}}, 'returns right filters for multiple layers with filters');
 
   t.end();
 });

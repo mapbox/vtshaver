@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var test = require('tape');
 var styleToFilter = require('../lib/styleToFilters.js');
-var properties_result_expressions = './fixtures/filters/expressions-filter.json';
+var properties_result_expressions = './fixtures/filters/expressions-properties.json';
 
 test('test get used properites from style.json', function(t) {
   var filters = styleToFilter({
