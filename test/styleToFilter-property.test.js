@@ -15,6 +15,9 @@ test('test get used properites from style.json', function(t) {
         "exp-test2-fake": ["==", ["has", "p2-fake", { "obj": 1 }], "false"],
         "exp-test3": ["==", ["feature-state", "p3"], "false"],
         "exp-test4": ["feature-state", "p4"],
+        "exp-test5": {
+          "property": "p5"
+        },
       }
     }, {
       "source-layer": "water",
