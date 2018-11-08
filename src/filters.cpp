@@ -12,6 +12,7 @@
 #include <mbgl/style/filter.hpp>
 #include <string>
 #include <utility>
+#include <iostream>
 
 // Single constructor used for any new instance of it.
 Nan::Persistent<v8::FunctionTemplate>& Filters::constructor() {
@@ -119,7 +120,6 @@ NAN_METHOD(Filters::New) {
                     }
                     // handle filters array
                     const v8::Local<v8::Value> layer_filter = layer->Get(Nan::New("filters").ToLocalChecked());
-
                     // error handling in case filter value passed in from JS-world is somehow invalid
                     if (layer_filter->IsNull() || layer_filter->IsUndefined()) {
                         Nan::ThrowError("Filters is not properly constructed.");
@@ -157,9 +157,33 @@ NAN_METHOD(Filters::New) {
                     // insert the key/value into filters map
                     // TODO(dane): what if we have duplicate source-layer filters?
 
+                    // handle property array
+                    const v8::Local<v8::Value> layer_properties = layer->Get(Nan::New("properties").ToLocalChecked());
+                    // error handling in case filter value passed in from JS-world is somehow invalid
+
+                    if (layer_properties->IsNull() || layer_properties->IsUndefined()) {
+                        Nan::ThrowError("Property-Filters is not properly constructed.");
+                        return;
+                    }
+
+                    // NOTICE: If a layer is styled, but does not have a property, the property value will equal []
+                    // NOTICE: If a property is true, that means we need to keep all the properties
+                    // If a boolean and is true, create a null/empty Filter object.
+                    filter_properties property;
+                    if (layer_properties->IsArray()) {
+                        auto propertyArray = layers_val.As<v8::Array>();
+                        property = {"values", propertyArray};
+                    } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
+                        property = {"all"};
+                        // filter = mbgl::style::Filter{};
+                    } else {
+                        Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
+                        return;
+                    }
+
                     std::string source_layer = *v8::String::Utf8Value(layer_name->ToString());
 
-                    self->add_filter(std::move(source_layer), std::move(filter), minzoom, maxzoom);
+                    self->add_filter(std::move(source_layer), std::move(filter), property, minzoom, maxzoom);
                     // can find these via filters.find("x")->second
                 }
             }

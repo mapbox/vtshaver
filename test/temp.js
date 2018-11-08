@@ -17,9 +17,9 @@ function vtinfo(buffer) {
     for (var i = 0; i < lay.length; i++) {
 
       let features = lay.feature(i).toGeoJSON(0, 0, 0);
-    //   if (k === 'road') {
-    //     // console.log(features.properties)
-    //   }
+      //   if (k === 'road') {
+      //     // console.log(features.properties)
+      //   }
 
 
       Object.keys(features.properties).forEach(key => {
@@ -42,7 +42,7 @@ var defaultInfo = vtinfo(defaultBuffer);
 
 // console.log()
 var filter_obj = Shaver.styleToFilters(JSON.parse(fs.readFileSync('./test/fixtures/styles/expressions.json').toString()));
-console.log(JSON.stringify(filter_obj, '', 4))
+// console.log(JSON.stringify(filter_obj, '', 4))
 
 /**
  * {"landuse": {
@@ -59,25 +59,27 @@ console.log(JSON.stringify(filter_obj, '', 4))
     }}
  */
 
-// var filters = new Shaver.Filters(filter_obj);
+var filters = new Shaver.Filters(filter_obj);
 
-// var options = {
-//   filters: filters,
-//   zoom: 14
-// };
+var options = {
+  filters: filters,
+  zoom: 14
+};
 
-// Shaver.shave(defaultBuffer, options, function(err, shavedTile) {
-//   if (err) {
-//     console.log(err)
-//   } else {
-//     var postTile = vtinfo(shavedTile);
-//     console.log(postTile);
-//     // compare
-//     Object.keys(postTile).forEach(key => {
-//       console.log(key, '=----------')
-//       console.log(defaultInfo[key])
-//       console.log(postTile[key])
-//     })
-//   }
+Shaver.shave(defaultBuffer, options, function(err, shavedTile) {
+  if (err) {
+    console.log(err)
+  } else {
+    var postTile = vtinfo(shavedTile);
+    // console.log(postTile);
+    // compare
+    Object.keys(postTile).forEach(key => {
+      console.log('\n');
+      console.log('🌞', key, '=====================');
+      console.log(defaultInfo[key])
+      console.log('🔥 MAGIC:⤵️\t⤵️️\t⤵️️\t⤵️️\t⤵️')
+      console.log(postTile[key])
+    })
+  }
 
-// });
+});

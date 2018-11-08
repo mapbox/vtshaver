@@ -397,8 +397,9 @@ void AsyncShave(uv_work_t* req) {
 
                 // get info from tuple
                 auto const& mbgl_filter_obj = std::get<0>(filter);
-                auto const minzoom = std::get<1>(filter);
-                auto const maxzoom = std::get<2>(filter);
+                auto const& propertity_filter = std::get<1>(filter);
+                auto const minzoom = std::get<2>(filter);
+                auto const maxzoom = std::get<3>(filter);
 
                 // If zoom level is relevant to filter
                 // OR if the style layer minzoom is styling overzoomed tiles...
