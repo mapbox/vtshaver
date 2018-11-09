@@ -168,18 +168,18 @@ NAN_METHOD(Filters::New) {
                     // NOTICE: If a property is true, that means we need to keep all the properties
                     filter_properties property;
                     if (layer_properties->IsArray()) {
-                        auto propertyArray = layers_val.As<v8::Array>();
+                        auto propertyArray = layer_properties.As<v8::Array>();
                         uint32_t propertiesLength = propertyArray->Length();
-                        auto* proArray = new std::string[propertiesLength];
-                        for (uint32_t index = 0; index < length; ++index) {
-                            v8::Local<v8::Value> property_value = layers->Get(index);
-                            proArray[index] = *v8::String::Utf8Value(property_value->ToString());
+                        
+                        std::vector<std::string> values(propertiesLength);
 
-                            std::cout << proArray[index] << std::endl;
+                        for (uint32_t index = 0; index < propertiesLength; ++index) {
+                            v8::Local<v8::Value> property_value = propertyArray->Get(index);
+                            values[index] = *v8::String::Utf8Value(property_value->ToString());
                         }
-                        property = {"values", proArray};
+                        property = {"values",  values};
                     } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
-                        property = {"all", new std::string[0]};
+                        property = {"all",  {}};
                     } else {
                         Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
                         return;

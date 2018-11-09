@@ -326,7 +326,8 @@ static mbgl::FeatureType convertGeom(vtzero::GeomType geometry_type) {
 
 void filterFeatures(vtzero::tile_builder* finalvt,
                     vtzero::layer const& layer,
-                    mbgl::style::Filter const& mbgl_filter_obj) {
+                    mbgl::style::Filter const& mbgl_filter_obj,
+                    Filters::filter_properties const& propertity_filter) {
     /**
     * TODOs:
     * - Instead of decoding/re-encoding, we'll want to add bytes...?
@@ -350,12 +351,21 @@ void filterFeatures(vtzero::tile_builder* finalvt,
                 feature_builder.set_id(feature.id());
             }
             feature_builder.set_geometry(feature.geometry());
-            while (auto idxs = feature.next_property_indexes()) {
-                feature_builder.add_property(mapper(idxs));
+
+            std::string propertity_filter_type = propertity_filter.type;
+            std::vector<std::string> properties = propertity_filter.values;
+            while (auto property = feature.next_property()) {
+                if (propertity_filter_type != "all") {
+                    if (std::find(
+                            properties.begin(),
+                            properties.end(),
+                            std::string(property.key())) != properties.end()) {
+                        feature_builder.add_property(property);
+                    };
+                } else {
+                    feature_builder.add_property(property);
+                }
             }
-            // while (auto idxs = feature.next_property_indexes()) {
-            //     feature_builder.add_property(mapper(idxs));
-            // }
             feature_builder.commit();
         }
 
@@ -412,7 +422,7 @@ void AsyncShave(uv_work_t* req) {
                         finalvt.add_existing_layer(layer); // Add to new tile
                     } else {
                         // Ampersand in front of var: "Pass as pointers"
-                        filterFeatures(&finalvt, layer, mbgl_filter_obj);
+                        filterFeatures(&finalvt, layer, mbgl_filter_obj, propertity_filter);
                     }
                 }
             }
