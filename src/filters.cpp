@@ -172,10 +172,17 @@ NAN_METHOD(Filters::New) {
                     filter_properties property;
                     if (layer_properties->IsArray()) {
                         auto propertyArray = layers_val.As<v8::Array>();
-                        property = {"values", propertyArray};
+                        length = propertyArray->Length();
+                        std::string* proArray = new std::string[length];
+                        for (i = 0; i < length; ++i) {
+                            v8::Local<v8::Value> property_value = layers->Get(i);
+                            v8::String::Utf8Value param1(property_value->ToString());
+                            proArray[i] = std::string(*param1);
+                            std::cout << proArray[i] << std::endl;
+                        }
+                        property = {"values", proArray};
                     } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
-                        property = {"all"};
-                        // filter = mbgl::style::Filter{};
+                        property = {"all", new std::string[0]};
                     } else {
                         Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
                         return;
