@@ -75,12 +75,13 @@ Shaver.shave(defaultBuffer, options, function(err, shavedTile) {
     // console.log(postTile);⬇️
     // compare
     Object.keys(postTile).forEach(key => {
-      console.log('\n');
-      console.log('🌞 For layer', [key], ', used properties: ', filter_obj[key].properties);
-      console.log('👗', 'Before:') 
+      console.log('\n\x1b[0m ');
+      console.log('⚠️ ', `For layer [ \x1b[32m ${key} \x1b[0m ], used properties: ⭕️ [\x1b[32m ${filter_obj[key].properties} \x1b[0m] ⭕️ `);
+      console.log('\x1b[36m \n👗', 'Before shave:\n \x1b[0m') 
       console.log(defaultInfo[key])
-      console.log('👙', 'Now:', '🥳 🥳 🥳 🥳')
+      console.log('\x1b[36m  \n👙', 'After shave:\n \x1b[0m')
       console.log(postTile[key])
+      console.log('\n🎉 🎉 🎉 🎉 🎉 🎉 ');
     })
   }
 
