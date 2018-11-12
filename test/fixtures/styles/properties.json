@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "name": "Expressions",
+  "layers": [{
+      "id": "landuse",
+      "type": "fill",
+      "source-layer": "landuse",
+      "layout": {
+        "text-field": "{class}"
+      }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source-layer": "water"
+    },
+    {
+      "id": "building",
+      "type": "fill",
+      "source-layer": "building"
+    },
+    {
+      "id": "road",
+      "type": "fill",
+      "source-layer": "road"
+    },
+    {
+      "id": "poi_label",
+      "type": "fill",
+      "source-layer": "poi_label"
+    },
+    {
+      "id": "road_label",
+      "type": "fill",
+      "source-layer": "road_label"
+    },
+    {
+      "id": "housenum_label",
+      "type": "fill",
+      "source-layer": "housenum_label"
+    }
+  ]
+}

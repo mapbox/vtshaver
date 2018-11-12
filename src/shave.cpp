@@ -327,7 +327,7 @@ static mbgl::FeatureType convertGeom(vtzero::GeomType geometry_type) {
 void filterFeatures(vtzero::tile_builder* finalvt,
                     vtzero::layer const& layer,
                     mbgl::style::Filter const& mbgl_filter_obj,
-                    Filters::filter_properties const& propertity_filter) {
+                    Filters::filter_properties const& property_filter) {
     /**
     * TODOs:
     * - Instead of decoding/re-encoding, we'll want to add bytes...?
@@ -352,10 +352,10 @@ void filterFeatures(vtzero::tile_builder* finalvt,
             }
             feature_builder.set_geometry(feature.geometry());
 
-            std::string propertity_filter_type = propertity_filter.type;
-            std::vector<std::string> properties = propertity_filter.values;
+            std::string property_filter_type = property_filter.type;
+            std::vector<std::string> properties = property_filter.values;
             while (auto property = feature.next_property()) {
-                if (propertity_filter_type != "all") {
+                if (property_filter_type != "all") {
                     if (std::find(
                             properties.begin(),
                             properties.end(),
@@ -407,22 +407,23 @@ void AsyncShave(uv_work_t* req) {
 
                 // get info from tuple
                 auto const& mbgl_filter_obj = std::get<0>(filter);
-                auto const& propertity_filter = std::get<1>(filter);
+                auto const& property_filter = std::get<1>(filter);
                 auto const minzoom = std::get<2>(filter);
                 auto const maxzoom = std::get<3>(filter);
 
                 // If zoom level is relevant to filter
                 // OR if the style layer minzoom is styling overzoomed tiles...
                 // continue filtering. Else, no need to keep the layer.
+                // std::cout << '00000000' << property_filter.type << std::endl;
                 if ((baton->zoom >= minzoom && baton->zoom <= maxzoom) ||
                     (baton->maxzoom && *(baton->maxzoom) < minzoom)) {
 
-                    // Skip feature re-encoding when filter is null/empty
-                    if (std::get<0>(filter) == mbgl::style::Filter()) {
+                    // Skip feature re-encoding when filter is null/empty AND we have no property k/v filter
+                    if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.type == "all") {
                         finalvt.add_existing_layer(layer); // Add to new tile
                     } else {
                         // Ampersand in front of var: "Pass as pointers"
-                        filterFeatures(&finalvt, layer, mbgl_filter_obj, propertity_filter);
+                        filterFeatures(&finalvt, layer, mbgl_filter_obj, property_filter);
                     }
                 }
             }
