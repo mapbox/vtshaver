@@ -176,9 +176,9 @@ NAN_METHOD(Filters::New) {
                             v8::Local<v8::Value> property_value = propertyArray->Get(index);
                             values[index] = *v8::String::Utf8Value(property_value->ToString());
                         }
-                        property = {"values",  values};
+                        property = {"values", values};
                     } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
-                        property = {"all",  {}};
+                        property = {"all", {}};
                     } else {
                         Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
                         return;
