@@ -169,11 +169,10 @@ NAN_METHOD(Filters::New) {
                     // NOTICE: If a property is true, that means we need to keep all the properties
                     filter_properties property;
                     if (layer_properties->IsArray()) {
-                        auto propertyArray = layer_properties.As<v8::Array>();
+                        // const auto propertyArray = layer_properties.As<v8::Array>();
+                        v8::Handle<v8::Array> propertyArray = v8::Handle<v8::Array>::Cast(layer_properties);
                         uint32_t propertiesLength = propertyArray->Length();
-                        
                         std::vector<std::string> values(propertiesLength);
-
                         for (uint32_t index = 0; index < propertiesLength; ++index) {
                             v8::Local<v8::Value> property_value = propertyArray->Get(index);
                             values[index] = *v8::String::Utf8Value(property_value->ToString());
