@@ -12,7 +12,11 @@ class Filters : public Nan::ObjectWrap {
     using filter_value_type = mbgl::style::Filter;
     using filter_properties = struct {
         std::string type; // [value:"values"| all:"keep all the values"]
+<<<<<<< HEAD
         std::string* value;
+=======
+        std::vector<std::string> values;
+>>>>>>> 68cef79
     };
     using filter_key_type = std::string; // TODO: convert to data_view
     using zoom_type = double;

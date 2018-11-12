@@ -29,7 +29,7 @@ function vtinfo(buffer) {
 
     layerInfo[k] = {
       features: lay.length,
-      propertiesLength: JSON.stringify(Object.keys(propertyKies))
+      properties: JSON.stringify(Object.keys(propertyKies))
     }
 
   });
@@ -60,6 +60,7 @@ var filter_obj = Shaver.styleToFilters(JSON.parse(fs.readFileSync('./test/fixtur
  */
 
 var filters = new Shaver.Filters(filter_obj);
+// console.log(filter_obj[key].properties)
 
 var options = {
   filters: filters,
@@ -71,14 +72,16 @@ Shaver.shave(defaultBuffer, options, function(err, shavedTile) {
     console.log(err)
   } else {
     var postTile = vtinfo(shavedTile);
-    // console.log(postTile);
+    // console.log(postTile);⬇️
     // compare
     Object.keys(postTile).forEach(key => {
-      console.log('\n');
-      console.log('🌞', key, '=====================');
+      console.log('\n\x1b[0m ');
+      console.log('⚠️ ', `For layer [ \x1b[32m ${key} \x1b[0m ], used properties: ⭕️ [\x1b[32m ${filter_obj[key].properties} \x1b[0m] ⭕️ `);
+      console.log('\x1b[36m \n👗', 'Before shave:\n \x1b[0m') 
       console.log(defaultInfo[key])
-      console.log('🔥 MAGIC:⤵️\t⤵️️\t⤵️️\t⤵️️\t⤵️')
+      console.log('\x1b[36m  \n👙', 'After shave:\n \x1b[0m')
       console.log(postTile[key])
+      console.log('\n🎉 🎉 🎉 🎉 🎉 🎉 ');
     })
   }
 

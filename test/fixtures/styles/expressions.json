@@ -16,14 +16,18 @@
         "expression-test2": ["==", ["has", "underground"], "false"],
         "expression-test": ["==", ["get", "underground1"], "false"],
         "expression-test2-fake": ["==", ["has", "underground1", { "obj": 1 }], "false"],
-        "expression-test-fake": ["==", ["get", "underground", { "obj": 1 }], "false"]
+        "expression-test5": ["==", ["get", "class"], "false"]
       }
     },
     {
       "id": "water-shadow",
       "type": "fill",
       "source": "composite",
-      "source-layer": "water"
+      "source-layer": "water",
+      "layout": {
+        "icon-image": "{maki}-{what}-{ever}",
+        "expression-test4": ["==", ["properties"], "false"]
+      }
     },
     {
       "id": "building",
@@ -49,9 +53,8 @@
           ["path", "pedestrian"], true, false
         ]
       ],
-      "layout": {
-        "icon-image": "{maki}-{what}-{ever}",
-        "expression-test4": ["==", ["properties"], "false"]
+      "paint": {
+        "whatervey": "{oneway}"
       }
     },
     {

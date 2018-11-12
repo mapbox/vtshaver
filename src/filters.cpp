@@ -7,6 +7,7 @@
 // clang-format off
 #include <node/src/node_conversion.hpp>
 // clang-format on
+#include <iostream>
 #include <mbgl/style/conversion.hpp>
 #include <mbgl/style/conversion/filter.hpp>
 #include <mbgl/style/filter.hpp>
@@ -159,8 +160,6 @@ NAN_METHOD(Filters::New) {
 
                     // handle property array
                     const v8::Local<v8::Value> layer_properties = layer->Get(Nan::New("properties").ToLocalChecked());
-                    // error handling in case filter value passed in from JS-world is somehow invalid
-
                     if (layer_properties->IsNull() || layer_properties->IsUndefined()) {
                         Nan::ThrowError("Property-Filters is not properly constructed.");
                         return;
@@ -168,21 +167,20 @@ NAN_METHOD(Filters::New) {
 
                     // NOTICE: If a layer is styled, but does not have a property, the property value will equal []
                     // NOTICE: If a property is true, that means we need to keep all the properties
-                    // If a boolean and is true, create a null/empty Filter object.
                     filter_properties property;
                     if (layer_properties->IsArray()) {
-                        auto propertyArray = layers_val.As<v8::Array>();
-                        length = propertyArray->Length();
-                        std::string* proArray = new std::string[length];
-                        for (i = 0; i < length; ++i) {
-                            v8::Local<v8::Value> property_value = layers->Get(i);
-                            v8::String::Utf8Value param1(property_value->ToString());
-                            proArray[i] = std::string(*param1);
-                            std::cout << proArray[i] << std::endl;
+                        auto propertyArray = layer_properties.As<v8::Array>();
+                        uint32_t propertiesLength = propertyArray->Length();
+                        
+                        std::vector<std::string> values(propertiesLength);
+
+                        for (uint32_t index = 0; index < propertiesLength; ++index) {
+                            v8::Local<v8::Value> property_value = propertyArray->Get(index);
+                            values[index] = *v8::String::Utf8Value(property_value->ToString());
                         }
-                        property = {"values", proArray};
+                        property = {"values",  values};
                     } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
-                        property = {"all", new std::string[0]};
+                        property = {"all",  {}};
                     } else {
                         Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
                         return;
