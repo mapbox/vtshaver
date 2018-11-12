@@ -354,18 +354,22 @@ void filterFeatures(vtzero::tile_builder* finalvt,
 
             std::string property_filter_type = property_filter.type;
             std::vector<std::string> properties = property_filter.values;
-            while (auto property = feature.next_property()) {
-                if (property_filter_type != "all") {
+            //
+            if (property_filter_type != "all") {
+                while (auto property = feature.next_property()) {
                     if (std::find(
                             properties.begin(),
                             properties.end(),
                             std::string(property.key())) != properties.end()) {
                         feature_builder.add_property(property);
                     };
-                } else {
+                }
+            } else {
+                while (auto property = feature.next_property()) {
                     feature_builder.add_property(property);
                 }
             }
+
             feature_builder.commit();
         }
 
