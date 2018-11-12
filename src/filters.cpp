@@ -13,7 +13,6 @@
 #include <mbgl/style/filter.hpp>
 #include <string>
 #include <utility>
-#include <iostream>
 
 // Single constructor used for any new instance of it.
 Nan::Persistent<v8::FunctionTemplate>& Filters::constructor() {
