@@ -354,22 +354,25 @@ void filterFeatures(vtzero::tile_builder* finalvt,
 
             std::string property_filter_type = property_filter.type;
             std::vector<std::string> properties = property_filter.values;
-            //
-            if (property_filter_type != "all") {
-                while (auto property = feature.next_property()) {
+            auto keytable = layer.key_table();
+
+            bool needAllProperties = property_filter_type == "all";
+            // if (property_filter_type != "all") {
+            while (auto idxs = feature.next_property_indexes()) {
+                if (!needAllProperties) {
+                    // get the key only if we don't need all the properties;
+                    std::string key = keytable[idxs.key().value()].to_string();
+                    // if the key is not in the properties list, skip to add to feature
                     if (std::find(
                             properties.begin(),
                             properties.end(),
-                            std::string(property.key())) != properties.end()) {
-                        feature_builder.add_property(property);
+                            key) == properties.end()) {
+                        continue;
                     };
                 }
-            } else {
-                while (auto property = feature.next_property()) {
-                    feature_builder.add_property(property);
-                }
+                // only if we want all the properties or the key in the properties list we add this property to feature
+                feature_builder.add_property(mapper(idxs));
             }
-
             feature_builder.commit();
         }
 
