@@ -72,8 +72,8 @@ NAN_METHOD(Filters::New) {
                 auto layers = layers_val.As<v8::Array>(); // Even if there layers_val is a string instead of an array, convert it to an array
 
                 // Loop through each layer in the object and convert its filter to a mbgl::style::Filter
-                uint32_t length = layers->Length();
-                for (uint32_t i = 0; i < length; ++i) {
+                std::uint32_t length = layers->Length();
+                for (std::uint32_t i = 0; i < length; ++i) {
                     // get v8::String containing layer name
                     v8::Local<v8::Value> layer_name_val = layers->Get(i);
                     if (!layer_name_val->IsString() || layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
@@ -165,19 +165,26 @@ NAN_METHOD(Filters::New) {
 
                     // NOTICE: If a layer is styled, but does not have a property, the property value will equal []
                     // NOTICE: If a property is true, that means we need to keep all the properties
-                    filter_properties property;
+                    filter_properties_type property;
                     if (layer_properties->IsArray()) {
                         // const auto propertyArray = layer_properties.As<v8::Array>();
                         v8::Handle<v8::Array> propertyArray = v8::Handle<v8::Array>::Cast(layer_properties);
-                        uint32_t propertiesLength = propertyArray->Length();
-                        std::vector<std::string> values(propertiesLength);
-                        for (uint32_t index = 0; index < propertiesLength; ++index) {
+                        std::uint32_t propertiesLength = propertyArray->Length();
+                        std::vector<std::string> values;
+                        values.reserve(propertiesLength);
+                        for (std::uint32_t index = 0; index < propertiesLength; ++index) {
                             v8::Local<v8::Value> property_value = propertyArray->Get(index);
-                            values[index] = *v8::String::Utf8Value(property_value->ToString());
+                            Nan::Utf8String utf8_value(property_value);
+                            int utf8_len = utf8_value.length();
+                            if (utf8_len > 0) {
+                                values.emplace_back(*utf8_value, static_cast<std::size_t>(utf8_len));
+                            }
                         }
-                        property = {"values", values};
+                        property.first = list;
+                        property.second = values;
                     } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
-                        property = {"all", {}};
+                        property.first = all;
+                        property.second = {};
                     } else {
                         Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
                         return;
@@ -185,7 +192,7 @@ NAN_METHOD(Filters::New) {
 
                     std::string source_layer = *v8::String::Utf8Value(layer_name->ToString());
 
-                    self->add_filter(std::move(source_layer), std::move(filter), property, minzoom, maxzoom);
+                    self->add_filter(std::move(source_layer), std::move(filter), std::move(property), minzoom, maxzoom);
                     // can find these via filters.find("x")->second
                 }
             }
