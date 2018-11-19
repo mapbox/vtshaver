@@ -7,7 +7,6 @@
 // clang-format off
 #include <node/src/node_conversion.hpp>
 // clang-format on
-#include <iostream>
 #include <mbgl/style/conversion.hpp>
 #include <mbgl/style/conversion/filter.hpp>
 #include <mbgl/style/filter.hpp>
