@@ -339,6 +339,16 @@ void filterFeatures(vtzero::tile_builder* finalvt,
 
     Filters::filter_properties_types const& property_filter_type = property_filter.first;
     std::vector<std::string> const& properties = property_filter.second;
+
+    auto const& keytable = layer.key_table();
+    std::vector<std::ptrdiff_t> props_by_index;
+    for (auto const& prop : properties) {
+        auto itr = std::find(keytable.begin(), keytable.end(), prop);
+        if (itr != keytable.end()) {
+            props_by_index.emplace_back(std::distance(keytable.begin(), itr));
+        }
+    }
+
     bool needAllProperties = property_filter_type == Filters::filter_properties_types::all;
 
     layer.for_each_feature([&](vtzero::feature&& feature) {
@@ -357,19 +367,13 @@ void filterFeatures(vtzero::tile_builder* finalvt,
             }
             feature_builder.set_geometry(feature.geometry());
 
-            auto const& keytable = layer.key_table();
-
             while (auto idxs = feature.next_property_indexes()) {
                 if (!needAllProperties) {
                     // get the key only if we don't need all the properties;
-                    std::string key = keytable[idxs.key().value()].to_string();
                     // if the key is not in the properties list, skip to add to feature
-                    if (std::find(
-                            properties.begin(),
-                            properties.end(),
-                            key) == properties.end()) {
+                    if (std::find(props_by_index.begin(), props_by_index.end(), idxs.key()) == props_by_index.end()) {
                         continue;
-                    };
+                    }
                 }
                 // only if we want all the properties or the key in the properties list we add this property to feature
                 feature_builder.add_property(mapper(idxs));
