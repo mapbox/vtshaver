@@ -65,11 +65,13 @@ NAN_METHOD(Filters::New) {
 
                 // get v8::Array of layers
                 v8::Local<v8::Value> layers_val = filters->GetPropertyNames();
-                // O!O!: the GetPropertyNames returns an Array, so we don't need to test the v8
+                // LCOV_EXCL_START
+                // the GetPropertyNames returns an Array, so we don't need to test the v8
                 if (!layers_val->IsArray() || layers_val->IsNull() || layers_val->IsUndefined()) {
                     Nan::ThrowError("layers must be an array and cannot be null or undefined");
                     return;
                 }
+                // LCOV_EXCL_STOP
                 auto layers = layers_val.As<v8::Array>(); // Even if there layers_val is a string instead of an array, convert it to an array
 
                 // Loop through each layer in the object and convert its filter to a mbgl::style::Filter
@@ -77,11 +79,13 @@ NAN_METHOD(Filters::New) {
                 for (std::uint32_t i = 0; i < length; ++i) {
                     // get v8::String containing layer name
                     v8::Local<v8::Value> layer_name_val = layers->Get(i);
+                    // LCOV_EXCL_START
                     // the layer_name_val is the name of the object, since we have checked the layers->Length(), which means layers->Get(i) can not be null undefined or others
                     if (!layer_name_val->IsString() || layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
                         Nan::ThrowError("layer name must be a string and cannot be null or undefined");
                         return;
                     }
+                    // LCOV_EXCL_STOP
                     auto layer_name = layer_name_val.As<v8::String>();
 
                     // get v8::Object containing layer
