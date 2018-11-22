@@ -65,6 +65,7 @@ NAN_METHOD(Filters::New) {
 
                 // get v8::Array of layers
                 v8::Local<v8::Value> layers_val = filters->GetPropertyNames();
+                // O!O!: the GetPropertyNames returns an Array, so we don't need to test the v8
                 if (!layers_val->IsArray() || layers_val->IsNull() || layers_val->IsUndefined()) {
                     Nan::ThrowError("layers must be an array and cannot be null or undefined");
                     return;
@@ -76,6 +77,7 @@ NAN_METHOD(Filters::New) {
                 for (std::uint32_t i = 0; i < length; ++i) {
                     // get v8::String containing layer name
                     v8::Local<v8::Value> layer_name_val = layers->Get(i);
+                    // the layer_name_val is the name of the object, since we have checked the layers->Length(), which means layers->Get(i) can not be null undefined or others
                     if (!layer_name_val->IsString() || layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
                         Nan::ThrowError("layer name must be a string and cannot be null or undefined");
                         return;
@@ -193,7 +195,6 @@ NAN_METHOD(Filters::New) {
                     std::string source_layer = *v8::String::Utf8Value(layer_name->ToString());
 
                     self->add_filter(std::move(source_layer), std::move(filter), std::move(property), minzoom, maxzoom);
-                    // can find these via filters.find("x")->second
                 }
             }
         }
