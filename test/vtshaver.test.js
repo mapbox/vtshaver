@@ -629,6 +629,53 @@ test('succeed: expression filters - z14', function(t) {
   });
 });
 
+test('succeed: expression filters with zoom condition - z16', function(t) {
+  var sizeBefore = defaultBuffer.length;
+  var bufferInfo = vtinfo(defaultBuffer);
+  var expression_with_zoom = {
+    "layers" : [
+      {
+        "id": "road",
+        "type": "line",
+        "source-layer": "road",
+        "minzoom": 13,
+        "filter": [
+          "all",
+          [
+            "step",
+            ["zoom"],
+            ["==", ["get", "class"], "track"],
+            14,
+            [
+              "match",
+              ["get", "class"],
+              ["track", "secondary_link", "tertiary_link", "service"],
+              true,
+              false
+            ]
+          ],
+          ["match", ["get", "structure"], ["none", "ford"], true, false],
+          ["==", ["geometry-type"], "LineString"]
+        ]
+      }
+    ]
+  }
+  var filter_json = Shaver.styleToFilters(expression_with_zoom);
+  var filters = new Shaver.Filters(filter_json);
+  t.equals(bufferInfo.layers.length, 7, 'original tile has seven layers');
+
+  Shaver.shave(defaultBuffer, {filters: filters, zoom: 16, maxzoom: 16}, function(err, shavedTile) {
+    t.ifError(err);
+    var postTile = vtinfo(shavedTile);
+
+    t.ok(shavedTile, 'tile was shaved without error');
+    t.equals(postTile.layers.length, 1, 'shaved out everything except roads');
+    t.equals(postTile.layers[0].name, 'road', 'shaved tile contains expected layer');
+    t.equals(postTile.layers[0].features, 3, 'shaved tile contains expected features');
+    t.end();
+  });
+});
+
 // Per https://github.com/mapbox/mapbox-gl-native/pull/12065
 test('failure: legacy + expression filter not supported', function(t) {
   var result = Shaver.styleToFilters(style_expressions_legacy);
