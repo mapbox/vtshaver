@@ -39,6 +39,10 @@ matrix:
     - os: linux
       env: BUILDTYPE=release TOOLSET=cfi CXXFLAGS="-fsanitize=cfi -fvisibility=hidden" LDFLAGS="-fsanitize=cfi"
       node_js: 10
+    # linux publishable node v11/release
+    - os: linux
+      env: BUILDTYPE=release
+      node_js: 11
     # linux publishable node v10/release
     - os: linux
       env: BUILDTYPE=release
@@ -63,6 +67,11 @@ matrix:
     - os: linux
       env: BUILDTYPE=debug
       node_js: 6
+    # osx publishable node v10/release
+    - os: osx
+      osx_image: xcode9.3
+      env: BUILDTYPE=release
+      node_js: 11
     # osx publishable node v10/release
     - os: osx
       osx_image: xcode9.3
