@@ -20,6 +20,7 @@ test('property key value filter', t => {
     if (process.env.UPDATE) {
       fs.writeFileSync(path.resolve(__dirname, propertyrJSON), JSON.stringify(filters));
     }
+    fs.writeFileSync(__dirname + '/fixtures/tiles/sf_16_10465_25329.shaved.vector.pbf', shavedTile);
     t.deepEquals(filters, require(propertyrJSON), 'property key value filter correctly');
     t.end();
   });

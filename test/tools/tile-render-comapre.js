@@ -10,16 +10,22 @@ function render(tile, config) {
     'mapbox://mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7',
     'mapbox://sprites/mapbox/streets-v9.json',
     'mapbox://sprites/mapbox/streets-v9.png',
-    `mapbox:///mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/${tile}`,
+    `mapbox:///mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/16/10465/25329.vector.pbf`,
     'mapbox://fonts/mapbox/DIN%20Offc%20Pro%20Medium%2cArial%20Unicode%20MS%20Regular/0-255.pbf',
     'mapbox://fonts/mapbox/DIN%20Offc%20Pro%20Regular%2cArial%20Unicode%20MS%20Regular/0-255.pbf',
     'mapbox://fonts/mapbox/DIN%20Offc%20Pro%20Bold%2cArial%20Unicode%20MS%20Bold/0-255.pbf'
   ];
   for (let i in URLS) {
-    assets[URLS[i]] = fs.readFileSync(`./test/tools/.fxitures/${URLS[i].replace('//', '@').split('/').join('&')}`);
+    let file;
+    if (URLS[i] === 'mapbox:///mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/16/10465/25329.vector.pbf') {
+      file = fs.readFileSync(tile);
+    } else {
+      file = fs.readFileSync(`./test/tools/.fxitures/${URLS[i].replace('//', '@').split('/').join('&')}`);
+    }
+    assets[URLS[i]] = file;
   }
   Map.render(
-    JSON.parse(fs.readFileSync(`./test/tools/.fxitures/style.json`)),
+    JSON.parse(fs.readFileSync(config.style)),
     assets, {
       zoom: config.zoom,
       width: 256,
@@ -38,28 +44,30 @@ function render(tile, config) {
 }
 
 
-
-
-
 /**
- * 
- * @param {String} tiles1 // the 1st tile's url
- * @param {String} tiles2 // the 2ed tile's url
+ * getImg
+ * @param {String} tiles1 // the 1st tile's path
  * @param {Object} config // config of the tile
  * {
  *      zoom: 16, 
  *      center: [-122.511291, 37.781569],
+ *      styles: '/xx.json'
  * }
  */
-function compare(tiles1, tiles2, config) {
-  render(tiles1, config);
-  render(tiles2, config);
-}
+exports.getImg = render;
 
-compare(
-  '16/10465/25329.vector.pbf',
-  '16/10465/25329.vector.pbf', {
+exports.getImg(
+  './test/fixtures/tiles/sf_16_10465_25329.vector.pbf', {
     zoom: 16,
     center: [-122.511291, 37.781569],
+    style: './test/tools/.fxitures/style.json'
+  }
+)
+
+exports.getImg(
+  './test/fixtures/tiles/sf_16_10465_25329.shaved.vector.pbf', {
+    zoom: 16,
+    center: [-122.511291, 37.781569],
+    style: './test/tools/.fxitures/style.json'
   }
 )
