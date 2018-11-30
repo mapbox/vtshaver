@@ -16,7 +16,6 @@ test('error handling', function(t) {
   t.deepEqual(styleToFilter('hello'), {}, 'returns a plain object when given a string');
   t.deepEqual(styleToFilter({layers:[]}), {}, 'returns a plain object when given an empty style layers');
   t.deepEqual(styleToFilter({layers:'lol no layers here'}), {}, 'returns a plain object when given snarky style layers');
-
   t.end();
 });
 
