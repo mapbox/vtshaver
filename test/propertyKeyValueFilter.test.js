@@ -18,9 +18,6 @@ var filter_obj = Shaver.styleToFilters(JSON.parse(fs.readFileSync(StylePath).toS
 function vtinfo(buffer) {
   var tile = new vt(new pbf(buffer));
   var layerInfo = {};
-  var info = {
-    layers: []
-  };
   Object.keys(tile.layers).forEach(function(k) {
     var lay = tile.layers[k];
     let propertyKies = {};

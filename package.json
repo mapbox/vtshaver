@@ -8,7 +8,9 @@
     "url": "git@github.com:mapbox/vtshaver.git"
   },
   "scripts": {
-    "test": "tape test/*.test.js",
+    "init-gl": "sh test/init-gl.sh",
+    "test-back": "tape test/*.test.js",
+    "test": "npm run init-gl",
     "install": "node-pre-gyp install --fallback-to-build",
     "docs": "npm run docs-cpp && npm run docs-js",
     "docs-cpp": "documentation build src/*.cpp --re --polyglot -f md -o API-CPP.md",

@@ -5,3 +5,4 @@ mason_packages
 .DS_Store
 *tgz
 test/tools/.cache
+test/tmp
