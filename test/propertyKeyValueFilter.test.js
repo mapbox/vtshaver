@@ -5,7 +5,7 @@ var pbf = require('pbf');
 var test = require('tape');
 var path = require('path');
 var propertyrJSON = './fixtures/properties/floating-filter.json';
-var pngRender = require('./tools/tile-render-comapre').getImg;
+// var pngRender = require('./tools/tile-render-comapre').getImg;
 
 const TilesPath = __dirname + '/fixtures/tiles/sf_16_10465_25329.vector.pbf';
 const StylePath = './test/tools/.fxitures/style.json'
@@ -53,21 +53,21 @@ test('property key value filter', t => {
     fs.writeFileSync(ShavedTilePath, shavedTile);
     t.deepEquals(filters, require(propertyrJSON), 'property key value filter correctly');
     //
-    pngRender(
-      TilesPath, {
-        zoom: 16,
-        center: [-122.511291, 37.781569],
-        style: StylePath
-      }
-    );
-    //
-    pngRender(
-      ShavedTilePath, {
-        zoom: 16,
-        center: [-122.511291, 37.781569],
-        style: StylePath
-      }
-    )
+    // pngRender(
+    //   TilesPath, {
+    //     zoom: 16,
+    //     center: [-122.511291, 37.781569],
+    //     style: StylePath
+    //   }
+    // );
+    // //
+    // pngRender(
+    //   ShavedTilePath, {
+    //     zoom: 16,
+    //     center: [-122.511291, 37.781569],
+    //     style: StylePath
+    //   }
+    // )
     t.end();
   });
 });
