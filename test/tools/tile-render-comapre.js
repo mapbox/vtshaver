@@ -55,19 +55,3 @@ function render(tile, config) {
  * }
  */
 exports.getImg = render;
-
-exports.getImg(
-  './test/fixtures/tiles/sf_16_10465_25329.vector.pbf', {
-    zoom: 16,
-    center: [-122.511291, 37.781569],
-    style: './test/tools/.fxitures/style.json'
-  }
-)
-
-exports.getImg(
-  './test/fixtures/tiles/sf_16_10465_25329.shaved.vector.pbf', {
-    zoom: 16,
-    center: [-122.511291, 37.781569],
-    style: './test/tools/.fxitures/style.json'
-  }
-)
