@@ -30,7 +30,6 @@
     "bytes": "^2.4.0",
     "d3-queue": "^3.0.1",
     "documentation": "^4.0.0",
-    "minimist": "~1.2.0",
     "tape": "^4.5.1"
   },
   "bin": {
