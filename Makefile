@@ -91,6 +91,7 @@ testpacked: testpack
 		(cd /tmp/package && make && make test)
 
 docs:
+	npm install -g documentation@4.0.0
 	npm run docs
 
 test:
