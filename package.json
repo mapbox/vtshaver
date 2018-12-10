@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/vtshaver",
-  "version": "0.1.3",
+  "version": "0.1.3-mofei-testing",
   "description": "Creates style-optimized vector tiles",
   "main": "./lib/index.js",
   "repository": {
