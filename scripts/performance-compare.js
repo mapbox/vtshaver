@@ -48,15 +48,34 @@ async function getAllTheTiles() {
       let cY = yMin;
       while (cY <= yMax) {
         cY += 1;
-        count++;
-        let stagingOrigin = await getTileSize(z, cX, cY, null, stagingToken, stagingHost);
-        let productionOptimize = await getTileSize(z, cX, cY, 'streets-v10', productionToken, productionHost);
-        let stagingOptimize = await getTileSize(z, cX, cY, 'streets-v10', stagingToken, stagingHost);
+
+        let stagingOrigin = 0;
+        let productionOptimize = 0;
+        let stagingOptimize = 0;
+
         console.log(z, cX, cY);
-        console.log(stagingOrigin, productionOptimize, stagingOptimize);
+        async function getSize() {
+          stagingOrigin = await getTileSize(z, cX, cY, null, stagingToken, stagingHost);
+          productionOptimize = await getTileSize(z, cX, cY, 'streets-v10', productionToken, productionHost);
+          stagingOptimize = await getTileSize(z, cX, cY, 'streets-v10', stagingToken, stagingHost);
+          if (stagingOrigin < 100 || productionOptimize < 100 || stagingOptimize < 100) {
+            console.log('\tbad request abandon re-get');
+            await getSize();
+          }
+        }
+        await getSize();
+
+        let table = '\tOrigin\told\tnew'
+        table += `\n\t${stagingOrigin}\t${productionOptimize}(${((productionOptimize-stagingOrigin)/stagingOrigin*100).toFixed(2)}%)\t${stagingOptimize}(${((stagingOptimize-stagingOrigin)/stagingOrigin*100).toFixed(2)}%)`
+
+        // else {
+        count++;
         levelOriginCount += Number(stagingOrigin);
         levelStreetsCount += Number(productionOptimize);
         levelLightCount += Number(stagingOptimize);
+        // }
+        console.log(table);
+
 
       }
       cX += 1;
@@ -79,7 +98,7 @@ async function getAllTheTiles() {
 
 // get the tiles size 
 async function getTileSize(z, x, y, style, access_token, host) {
-  console.log(host);
+  // console.log(host);
   let path = `/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/${z}/${x}/${y}.vector.pbf?access_token=${access_token}`;
   if (style) {
     path += `&style=mapbox://styles/mapbox/${style}@0`;
