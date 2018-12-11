@@ -1,11 +1,36 @@
 const https = require('https');
 
-let stagingToken = 'pk.eyJ1Ijoic3ByaW5nbWV5ZXItc3RhZ2luZyIsImEiOiJjajJnaTU5NTAwMDFoMzJtbWQxc29zaThmIn0.N2GJ6F8oOJpbVDoABkhpHQ';
-let stagingHost = 'cloudfront-staging.tilestream.net';
-let productionToken = 'pk.eyJ1Ijoiemh1d2VubG9uZyIsImEiOiJjaW15ejRweHAwNDh3dmxtNGdhZHJwc2VoIn0.XkqHtTtuAOaol5QliCSNyg';
+if (!process.env.MapboxStagingToken) {
+  console.log('Please pass in env: MapboxStagingToken');
+  process.exit(-1);
+}
+
+if (!process.env.MapboxStagingHost) {
+  console.log('Please pass in env: MapboxStagingHost');
+  process.exit(-1);
+}
+
+if (!process.env.MapboxAccessToken) {
+  console.log('Please pass in env: MapboxAccessToken');
+  process.exit(-1);
+}
+
+if (!process.env.PlotlyUser) {
+  console.log('Please pass in env: PlotlyUser');
+  process.exit(-1);
+}
+
+if (!process.env.PlotlyApiKey) {
+  console.log('Please pass in env: PlotlyApiKey');
+  process.exit(-1);
+}
+
+let stagingToken = process.env.MapboxStagingToken
+let stagingHost = process.env.MapboxStagingHost
+let productionToken = process.env.MapboxAccessToken
 let productionHost = 'api.mapbox.com'
 
-var plotly = require('plotly')('zmofei', 'I9TLFZPyCfewvP8frKdz');
+var plotly = require('plotly')(process.env.PlotlyUser, process.env.PlotlyApiKey);
 
 const center = [121.49677, 31.23585];
 const step = 1;
@@ -96,7 +121,7 @@ async function getAllTheTiles() {
   });
 }
 
-// get the tiles size 
+// get the tiles size
 async function getTileSize(z, x, y, style, access_token, host) {
   // console.log(host);
   let path = `/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/${z}/${x}/${y}.vector.pbf?access_token=${access_token}`;
