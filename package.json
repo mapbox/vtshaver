@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/vtshaver",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Creates style-optimized vector tiles",
   "main": "./lib/index.js",
   "repository": {
@@ -12,11 +12,13 @@
     "install": "node-pre-gyp install --fallback-to-build",
     "docs": "npm run docs-cpp && npm run docs-js",
     "docs-cpp": "documentation build src/*.cpp --re --polyglot -f md -o API-CPP.md",
-    "docs-js": "documentation build lib/styleToFilters.js -f md -o API-JavaScript.md"
+    "docs-js": "documentation build lib/styleToFilters.js -f md -o API-JavaScript.md",
+    "build:dev": "make debug"
   },
   "author": "Mapbox",
   "license": "ISC",
   "dependencies": {
+    "@mapbox/mapbox-gl-style-spec": "^13.3.0",
     "nan": "^2.11.1",
     "node-pre-gyp": "^0.12.0"
   },

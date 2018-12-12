@@ -1,19 +1,33 @@
 {
   "version": 1,
   "name": "Expressions",
-  "layers": [
-    {
+  "layers": [{
       "id": "landuse",
       "type": "fill",
       "source": "composite",
       "source-layer": "landuse",
-      "filter": ["match", ["get", "class"], ["airport", "cemetery", "hospital", "park", "pitch", "sand", "school"], true, false]
+      "filter": ["match", ["get", "class"],
+        ["airport", "cemetery", "hospital", "park", "pitch", "sand", "school"], true, false
+      ],
+      "paint": {
+        "line-cap": "round",
+        "expression-test4": ["feature-state", "underground4"],
+        "expression-test3": ["==", ["feature-state", "underground"], "false"],
+        "expression-test2": ["==", ["has", "underground"], "false"],
+        "expression-test": ["==", ["get", "underground1"], "false"],
+        "expression-test2-fake": ["==", ["has", "underground1", { "obj": 1 }], "false"],
+        "expression-test5": ["==", ["get", "class"], "false"]
+      }
     },
-        {
+    {
       "id": "water-shadow",
       "type": "fill",
       "source": "composite",
-      "source-layer": "water"
+      "source-layer": "water",
+      "layout": {
+        "icon-image": "{maki}-{what}-{ever}",
+        "expression-test4": ["==", ["properties"], "false"]
+      }
     },
     {
       "id": "building",
@@ -21,8 +35,7 @@
       "source": "composite",
       "source-layer": "building",
       "minzoom": 15,
-      "filter": ["all",
-        ["!", ["match", ["get", "type"], "building:part", true, false]],
+      "filter": ["all", ["!", ["match", ["get", "type"], "building:part", true, false]],
         ["==", ["get", "underground"], "false"]
       ]
     },
@@ -32,18 +45,30 @@
       "source": "composite",
       "source-layer": "road",
       "minzoom": 12,
-      "filter": ["all",
-        ["==", ["geometry-type"], "Polygon"],
-        ["match", ["get", "structure"], ["none", "ford"], true, false],
-        ["match", ["get", "class"], ["path", "pedestrian"], true, false]
-      ]
+      "filter": ["all", ["==", ["geometry-type"], "Polygon"],
+        ["match", ["get", "structure"],
+          ["none", "ford"], true, false
+        ],
+        ["match", ["get", "class"],
+          ["path", "pedestrian"], true, false
+        ]
+      ],
+      "paint": {
+        "whatervey": "{oneway}"
+      }
     },
     {
       "id": "poi-label",
       "type": "symbol",
       "source": "composite",
       "source-layer": "poi_label",
-      "filter": ["<=", ["number", ["get", "filterrank"]], 3]
+      "filter": ["<=", ["number", ["get", "filterrank"]], 3],
+      "paint": {
+        "circle-radius": "{circle-radius}"
+      },
+      "layout": {
+        "text-field": "{name_zh}"
+      }
     },
     { "id": "water", "ref": "water-shadow", "paint": { "fill-color": "hsl(196, 80%, 70%)" } },
     {
@@ -51,7 +76,15 @@
       "type": "symbol",
       "source": "composite",
       "source-layer": "housenum_label",
-      "minzoom": 17
+      "minzoom": 17,
+      "layout": {
+        "text-field": {
+          "stops": [
+            [11, "{ref}"],
+            [12, "{name_zh}"]
+          ]
+        }
+      }
     }
   ]
 }
