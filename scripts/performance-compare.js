@@ -166,6 +166,7 @@ async function getTileSize(z, x, y, style, access_token, host) {
  * var tile = pointToTileFraction(30.5, 50.5, 15)
  * //=tile
  */
+
 function pointToTileFraction(lon, lat, z) {
   var d2r = Math.PI / 180,
     r2d = 180 / Math.PI;
