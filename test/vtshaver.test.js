@@ -702,7 +702,7 @@ test('failure: creating Shaver.Filters() with invalid object', function(t) {
 test('failure: Shaver.Filters(): invalid filter', function(t) {
   try {
     var filters = new Shaver.Filters({
-      "poi_label": {filters: 2, minzoom: 0, maxzoom: 22 }
+      "poi_label": {filters: 2, minzoom: 0, maxzoom: 22, properties: true }
     });
     t.ok(false);
   } catch (err) {
@@ -714,7 +714,7 @@ test('failure: Shaver.Filters(): invalid filter', function(t) {
 
 test('failure: creating Shaver.Filters() with invalid Filter object', function(t) {
   try {
-    var filters = new Shaver.Filters({ "poi_label": {filters: [0], minzoom: 0, maxzoom: 22} });
+    var filters = new Shaver.Filters({ "poi_label": {filters: [0], minzoom: 0, maxzoom: 22, properties:true} });
     t.ok(false);
   } catch (err) {
     t.ok(err);

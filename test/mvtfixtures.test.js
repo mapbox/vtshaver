@@ -7,28 +7,28 @@ var fixtures = require('@mapbox/mvt-fixtures');
 var SHOW_ERROR = process.env.SHOW_ERROR;
 
 var genericFilter = new Shaver.Filters(Shaver.styleToFilters({
-  layers: [
-    {
-      "source-layer": "layer_name",
-      filter: ["==","string","hello"]
-    }
-  ]
+  layers: [{
+    "source-layer": "layer_name",
+    filter: ["==", "string", "hello"]
+  }]
 }));
 
 test('validator: layers successfully shaved, all value types', function(t) {
   var buffer = fixtures.get('038').buffer;
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==","string_value","ello"]
+    layers: [{
+      "source-layer": "hello",
+      "filter": ["==", "string_value", "ello"],
+      "layout": {
+        "allproperties": ["==", ["properties"], "false"]
       }
-    ]
+    }],
+
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     if (err) throw err;
-    var postTile =  new vt(new pbf(shavedTile));
+    var postTile = new vt(new pbf(shavedTile));
     t.ok(shavedTile);
     t.equals(Object.keys(postTile.layers).length, 1, 'shaved tile contains expected number of layers');
     t.equals(shavedTile.length, 176, 'expected tile size after filtering');
@@ -39,17 +39,18 @@ test('validator: layers successfully shaved, all value types', function(t) {
 test('validator: layers successfully shaved, expression', function(t) {
   var buffer = fixtures.get('038').buffer;
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==", ["get", "string_value"], "ello"]
+    layers: [{
+      "source-layer": "hello",
+      "filter": ["==", ["get", "string_value"], "ello"],
+      "layout": {
+        "allproperties": ["==", ["properties"], "false"]
       }
-    ]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     if (err) throw err;
-    var postTile =  new vt(new pbf(shavedTile));
+    var postTile = new vt(new pbf(shavedTile));
     t.ok(shavedTile);
     t.equals(Object.keys(postTile.layers).length, 1, 'shaved tile contains expected number of layers');
     t.equals(shavedTile.length, 176, 'expected tile size after filtering');
@@ -60,17 +61,18 @@ test('validator: layers successfully shaved, expression', function(t) {
 test('validator: layers successfully shaved, expression - getType', function(t) {
   var buffer = fixtures.get('021').buffer;
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==", ["geometry-type"], "LineString"]
+    layers: [{
+      "source-layer": "hello",
+      "filter": ["==", ["geometry-type"], "LineString"],
+      "layout": {
+        "allproperties": ["==", ["properties"], "false"]
       }
-    ]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     if (err) throw err;
-    var postTile =  new vt(new pbf(shavedTile));
+    var postTile = new vt(new pbf(shavedTile));
     t.ok(shavedTile);
     t.equals(Object.keys(postTile.layers).length, 1, 'shaved tile contains expected number of layers');
     t.equals(shavedTile.length, 56, 'expected tile size after filtering');
@@ -80,7 +82,7 @@ test('validator: layers successfully shaved, expression - getType', function(t) 
 
 test('validator: version 2 no name field in Layer', function(t) {
   var buffer = fixtures.get('014').buffer;
-  Shaver.shave(buffer, {filters: genericFilter, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: genericFilter, zoom: 0 }, function(err, shavedTile) {
     t.ok(err);
     if (SHOW_ERROR) console.log(err);
     t.end();
@@ -91,15 +93,13 @@ test('validator: unknown field type in Layer', function(t) {
   var buffer = fixtures.get('016').buffer;
 
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==","id","1"]
-      }
-    ]
+    layers: [{
+      "source-layer": "hello",
+      filter: ["==", "id", "1"]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     t.notOk(err);
     t.end();
   });
@@ -108,7 +108,7 @@ test('validator: unknown field type in Layer', function(t) {
 test('validator: version 1 no name', function(t) {
   var buffer = fixtures.get('023').buffer;
 
-  Shaver.shave(buffer, {filters: genericFilter, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: genericFilter, zoom: 0 }, function(err, shavedTile) {
     t.ok(err);
     if (SHOW_ERROR) console.log(err);
     t.end();
@@ -119,15 +119,13 @@ test('validator: odd number of tags in Feature', function(t) {
   var buffer = fixtures.get('005').buffer;
 
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==","string_value","world"]
-      }
-    ]
+    layers: [{
+      "source-layer": "hello",
+      filter: ["==", "string_value", "world"]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     t.ok(err);
     if (SHOW_ERROR) console.log(err);
     t.end();
@@ -138,15 +136,13 @@ test('validator: invalid key or value as it does not appear in the layer', funct
   var buffer = fixtures.get('042').buffer;
 
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==","string_value","park"]
-      }
-    ]
+    layers: [{
+      "source-layer": "hello",
+      filter: ["==", "string_value", "park"]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     t.ok(err);
     if (SHOW_ERROR) console.log(err);
     t.end();
@@ -156,16 +152,14 @@ test('validator: invalid key or value as it does not appear in the layer', funct
 test('validator: Feature unknown geometry type', function(t) {
   var buffer = fixtures.get('006').buffer;
 
- var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        "filter": [ "==", "$id", 0 ]
-      }
-    ]
+  var filters = new Shaver.Filters(Shaver.styleToFilters({
+    layers: [{
+      "source-layer": "hello",
+      "filter": ["==", "$id", 0]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     t.ok(err);
     if (SHOW_ERROR) console.log(err);
     t.end();
@@ -176,15 +170,13 @@ test('validator: Feature unknown field type type', function(t) {
   var buffer = fixtures.get('041').buffer;
 
   var filters = new Shaver.Filters(Shaver.styleToFilters({
-    layers: [
-      {
-        "source-layer": "hello",
-        filter: ["==","string_value","lake"]
-      }
-    ]
+    layers: [{
+      "source-layer": "hello",
+      filter: ["==", "string_value", "lake"]
+    }]
   }));
 
-  Shaver.shave(buffer, {filters: filters, zoom: 0}, function(err, shavedTile) {
+  Shaver.shave(buffer, { filters: filters, zoom: 0 }, function(err, shavedTile) {
     t.ok(err);
     if (SHOW_ERROR) console.log(err);
     t.end();

@@ -65,21 +65,27 @@ NAN_METHOD(Filters::New) {
 
                 // get v8::Array of layers
                 v8::Local<v8::Value> layers_val = filters->GetPropertyNames();
+                // LCOV_EXCL_START
+                // the GetPropertyNames returns an Array, so we don't need to test the v8
                 if (!layers_val->IsArray() || layers_val->IsNull() || layers_val->IsUndefined()) {
                     Nan::ThrowError("layers must be an array and cannot be null or undefined");
                     return;
                 }
+                // LCOV_EXCL_STOP
                 auto layers = layers_val.As<v8::Array>(); // Even if there layers_val is a string instead of an array, convert it to an array
 
                 // Loop through each layer in the object and convert its filter to a mbgl::style::Filter
-                uint32_t length = layers->Length();
-                for (uint32_t i = 0; i < length; ++i) {
+                std::uint32_t length = layers->Length();
+                for (std::uint32_t i = 0; i < length; ++i) {
                     // get v8::String containing layer name
                     v8::Local<v8::Value> layer_name_val = layers->Get(i);
+                    // LCOV_EXCL_START
+                    // the layer_name_val is the name of the object, since we have checked the layers->Length(), which means layers->Get(i) can not be null undefined or others
                     if (!layer_name_val->IsString() || layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
                         Nan::ThrowError("layer name must be a string and cannot be null or undefined");
                         return;
                     }
+                    // LCOV_EXCL_STOP
                     auto layer_name = layer_name_val.As<v8::String>();
 
                     // get v8::Object containing layer
@@ -119,7 +125,6 @@ NAN_METHOD(Filters::New) {
                     }
                     // handle filters array
                     const v8::Local<v8::Value> layer_filter = layer->Get(Nan::New("filters").ToLocalChecked());
-
                     // error handling in case filter value passed in from JS-world is somehow invalid
                     if (layer_filter->IsNull() || layer_filter->IsUndefined()) {
                         Nan::ThrowError("Filters is not properly constructed.");
@@ -157,10 +162,43 @@ NAN_METHOD(Filters::New) {
                     // insert the key/value into filters map
                     // TODO(dane): what if we have duplicate source-layer filters?
 
+                    // handle property array
+                    const v8::Local<v8::Value> layer_properties = layer->Get(Nan::New("properties").ToLocalChecked());
+                    if (layer_properties->IsNull() || layer_properties->IsUndefined()) {
+                        Nan::ThrowError("Property-Filters is not properly constructed.");
+                        return;
+                    }
+
+                    // NOTICE: If a layer is styled, but does not have a property, the property value will equal []
+                    // NOTICE: If a property is true, that means we need to keep all the properties
+                    filter_properties_type property;
+                    if (layer_properties->IsArray()) {
+                        // const auto propertyArray = layer_properties.As<v8::Array>();
+                        v8::Handle<v8::Array> propertyArray = v8::Handle<v8::Array>::Cast(layer_properties);
+                        std::uint32_t propertiesLength = propertyArray->Length();
+                        std::vector<std::string> values;
+                        values.reserve(propertiesLength);
+                        for (std::uint32_t index = 0; index < propertiesLength; ++index) {
+                            v8::Local<v8::Value> property_value = propertyArray->Get(index);
+                            Nan::Utf8String utf8_value(property_value);
+                            int utf8_len = utf8_value.length();
+                            if (utf8_len > 0) {
+                                values.emplace_back(*utf8_value, static_cast<std::size_t>(utf8_len));
+                            }
+                        }
+                        property.first = list;
+                        property.second = values;
+                    } else if (layer_properties->IsBoolean() && layer_properties->IsTrue()) {
+                        property.first = all;
+                        property.second = {};
+                    } else {
+                        Nan::ThrowTypeError("invalid filter value, must be an array or a boolean");
+                        return;
+                    }
+
                     std::string source_layer = *v8::String::Utf8Value(layer_name->ToString());
 
-                    self->add_filter(std::move(source_layer), std::move(filter), minzoom, maxzoom);
-                    // can find these via filters.find("x")->second
+                    self->add_filter(std::move(source_layer), std::move(filter), std::move(property), minzoom, maxzoom);
                 }
             }
         }
