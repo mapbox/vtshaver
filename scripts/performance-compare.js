@@ -32,25 +32,26 @@ let productionHost = 'api.mapbox.com'
 
 var plotly = require('plotly')(process.env.PlotlyUser, process.env.PlotlyApiKey);
 
-const center = [121.49677, 31.23585];
+// const center = [121.49677, 31.23585];
+const center = [-122.4163, 37.7662];
 const step = 1;
 var stagingOriginData = {
   x: [],
   y: [],
   type: 'bar',
-  name: 'stagingOriginData'
+  name: 'Standard'
 }
 var productionOptimizeData = {
   x: [],
   y: [],
   type: 'bar',
-  name: 'productionOptimizeData'
+  name: 'FilterOptimize'
 }
 var stagingOptimizeData = {
   x: [],
   y: [],
   type: 'bar',
-  name: 'stagingOptimizeData'
+  name: 'Filter+Key/ValueOptimize'
 }
 
 //
@@ -79,12 +80,14 @@ async function getAllTheTiles() {
         let stagingOptimize = 0;
 
         console.log(z, cX, cY);
+        // mapbox://styles/zhuwenlong/cjpm9htzg0sv32rjtljbz9h4d
         async function getSize() {
-          stagingOrigin = await getTileSize(z, cX, cY, null, stagingToken, stagingHost);
-          productionOptimize = await getTileSize(z, cX, cY, 'streets-v10', productionToken, productionHost);
-          stagingOptimize = await getTileSize(z, cX, cY, 'streets-v10', stagingToken, stagingHost);
-          if (stagingOrigin < 100 || productionOptimize < 100 || stagingOptimize < 100) {
-            console.log('\tbad request abandon re-get');
+          stagingOrigin = await getTileSize(z, cX, cY, 'zhuwenlong/cjpm9htzg0sv32rjtljbz9h4d', false, productionToken, productionHost);
+          productionOptimize = await getTileSize(z, cX, cY, 'zhuwenlong/cjpm9htzg0sv32rjtljbz9h4d@2018-12-13T07:08:00.729Z', true, productionToken, productionHost);
+          stagingOptimize = await getTileSize(z, cX, cY, 'zhuwenlong/cjpm93a1s4eqi2sou27mnfvcp@2018-12-13T06:56:41.930Z', true, stagingToken, stagingHost);
+          if (productionOptimize > (stagingOrigin | 0 + 3) || stagingOptimize > (stagingOrigin | 0 + 3)) {
+            console.log(stagingOrigin < (productionOptimize + 10), stagingOrigin < (stagingOptimize | 0 + 10))
+            console.log('\tbad request abandon re-get', stagingOrigin, productionOptimize, stagingOptimize);
             await getSize();
           }
         }
@@ -115,19 +118,20 @@ async function getAllTheTiles() {
 
   plotly.plot([stagingOriginData, productionOptimizeData, stagingOptimizeData], {
     fileopt: "overwrite",
-    filename: "vt-shaver",
+    filename: "vt-shaver-feizhu",
   }, function(err, msg) {
     console.log(msg);
   });
 }
 
 // get the tiles size
-async function getTileSize(z, x, y, style, access_token, host) {
+async function getTileSize(z, x, y, style, optimize, access_token, host) {
   // console.log(host);
   let path = `/v4/mapbox.mapbox-terrain-v2,mapbox.mapbox-streets-v7/${z}/${x}/${y}.vector.pbf?access_token=${access_token}`;
-  if (style) {
-    path += `&style=mapbox://styles/mapbox/${style}@0`;
+  if (optimize) {
+    path += `&style=mapbox://styles/${style}`;
   }
+  // console.log(host + path)
 
   const options = {
     hostname: host,
