@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.0
+
+- Support key/value filter. (https://github.com/mapbox/vtshaver/issues/15)
+
 ## v0.1.3
 
 - Upgrade nan and node-pre-gyp
