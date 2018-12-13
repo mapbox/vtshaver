@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' />
+    <title>Vt shaver compare</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.41.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+        
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.1.0/mapbox-gl-compare.js'></script>
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-compare/v0.1.0/mapbox-gl-compare.css' type='text/css' />
+</head>
+
+<body>
+    <div id='before' class="map"></div>
+    <div id='after' class="map"></div>
+    <script>
+        const Token = YOUTOKEN;
+        const APIURL = APIURL
+        const StyleId = StyleID;
+
+        mapboxgl.config.API_URL = APIURL;
+        mapboxgl.accessToken = Token
+        var before = new mapboxgl.Map({
+            container: 'before',
+            style: StyleId,
+            localIdeographFontFamily: "'Noto Sans', 'Noto Sans CJK SC', sans-serif",
+            zoom: 12,
+            center: [121.49677, 31.23585],
+            hash: true
+        });
+        var after = new mapboxgl.Map({
+            container: 'after',
+            style: `${StyleId}?optimize=true`,
+            localIdeographFontFamily: "'Noto Sans', 'Noto Sans CJK SC', sans-serif",
+            zoom: 12,
+            center: [121.49677, 31.23585],
+            hash: true
+        });
+        new mapboxgl.Compare(before, after, {})
+    </script>
+
+</body>
+
+</html>
