@@ -22,19 +22,19 @@ We also use [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) as a C++ li
 
 These commands are set from within [the Makefile](./Makefile).
 
-## Releaseing new version
+## Releasing new version
 
 If you want release a new version of vtshaver:
 
 - [ ] All features are landed and tickets are closed for the milestone.
 - [ ] All tests are passing on travis
 - [ ] Test coverage is good: same or increased
-- [ ] If anything has been added to `.npmignore`, when we run `make testpacked` to ensure tests pass
+- [ ] If anything has been added to `.npmignore`, then we run `make testpacked` to ensure tests pass
 - [ ] For any major new feature we've made a dev package and tested downstream in staging
 - [ ] A developer has bumped the version in the `package.json` in `master`
 - [ ] A developer has committed with `[publish binary]` in the commit message
 - [ ] We've confirmed that the travis job with `[publish binary]` was fully 🍏
-- [ ] We've tagged a new git tag `git tag v0.2.0 -a -m "vx.x.x"` and uploaded to github `git push --tags`
+- [ ] We've tagged a new git tag `git tag vX.X.X -a -m "vX.X.X"` and uploaded to github `git push --tags`
 - [ ] Update the `changelog.md`
 - [ ] Run npm pack and ensure that show only the intended files will be packaged and nothing unintended or accidental
 - [ ] Publish to npm repository: `mbx npm publish`
