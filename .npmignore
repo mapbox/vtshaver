@@ -16,3 +16,5 @@ CONTRIBUTING.md
 CODE_OF_CONDUCT.md
 API-CPP.md
 API-JavaScript.md
+.vscode
+*.*~
