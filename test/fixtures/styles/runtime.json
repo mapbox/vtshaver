@@ -77,21 +77,6 @@
         "text-field": "{name_zh}"
       }
     },
-    { "id": "water", "ref": "water-shadow", "paint": { "fill-color": "hsl(196, 80%, 70%)" } },
-    {
-      "id": "housenum-label",
-      "type": "symbol",
-      "source": "composite",
-      "source-layer": "housenum_label",
-      "minzoom": 17,
-      "layout": {
-        "text-field": {
-          "stops": [
-            [11, "{ref}"],
-            [12, "{name_zh}"]
-          ]
-        }
-      }
-    }
+    { "id": "water", "ref": "water-shadow", "paint": { "fill-color": "hsl(196, 80%, 70%)" } }
   ]
 }
