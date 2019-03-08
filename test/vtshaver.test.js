@@ -300,6 +300,38 @@ test('success: layers sucessfully shaved - detect one feature', function(t) {
   });
 });
 
+test('success: layers sucessfully shaved - remove features not required on this zoom', function(t) {
+  var sizeBefore = defaultBuffer.length;
+  var filters = new Shaver.Filters(Shaver.styleToFilters({
+    layers: [
+      {
+        "id": "foot",
+        "source-layer": "road",
+        "filter": [ "==", ["get", "type"], "footway" ],
+        "minzoom": 14
+      },
+      {
+        "id": "cycle",
+        "source-layer": "road",
+        "filter": [ "<=", ["get", "type"], "cycleway" ],
+        "minzoom": 15
+      }
+    ]
+  }));
+
+  Shaver.shave(defaultBuffer, {filters: filters, zoom: 14}, function(err, shavedTile) {
+    if (err) throw err;
+    var postTile = vtinfo(shavedTile);
+    t.ok(shavedTile);
+    t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
+    t.equals(postTile.layers[0].name, 'road', 'shaved tile contains expected layer');
+    t.equals(postTile.layers[0].features, 5, 'shaved tile contains only footway features');
+    t.ok((shavedTile.length < sizeBefore && shavedTile.length !== 0), 'successfully shaved');
+    if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
+    t.end();
+  });
+});
+
 // I dont understand the purpose of this test. Was past-Carol trying to tell present-Carol something?
 test('success: layers sucessfully shaved - no features', function(t) {
   var sizeBefore = defaultBuffer.length;
@@ -344,7 +376,7 @@ test('success: layers shaved successfully - tile zoom irrelevant to style zoom',
     layers: [
       {
         "source-layer": "poi_label",
-        filter: ["!=","maki","cafe"],
+        filter: ["!=",["get","maki"],"cafe"],
         minzoom: 14,
         maxzoom: 15
       }
