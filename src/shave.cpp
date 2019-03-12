@@ -296,14 +296,20 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
 };
 
 static bool evaluate(mbgl::style::Filter const& filter,
-                     float zoom,
+                     float minzoom,
+                     float maxzoom,
                      mbgl::FeatureType ftype,
                      vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
 {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
-    // std::string const& key is dynamic and comes from the Filter object
-    mbgl::style::expression::EvaluationContext context(zoom, &geomfeature);
-    return filter(context);
+
+    for(int zoom = floor(minzoom); zoom <= ceil(maxzoom); zoom++) {
+        // std::string const& key is dynamic and comes from the Filter object
+        mbgl::style::expression::EvaluationContext context(zoom, &geomfeature);
+        bool result = filter(context);
+        if (result) return result;
+    }
+    return false;
 }
 
 static mbgl::FeatureType convertGeom(vtzero::GeomType geometry_type) {
@@ -322,7 +328,8 @@ static mbgl::FeatureType convertGeom(vtzero::GeomType geometry_type) {
 }
 
 void filterFeatures(vtzero::tile_builder* finalvt,
-                    float zoom,
+                    float minzoom,
+                    float maxzoom,
                     vtzero::layer const& layer,
                     mbgl::style::Filter const& mbgl_filter_obj,
                     Filters::filter_properties_type const& property_filter) {
@@ -358,7 +365,7 @@ void filterFeatures(vtzero::tile_builder* finalvt,
 
         // If evaluate() returns true, this feature includes properties that are relevant to the filter.
         // So we add the feature to the final layer.
-        if (evaluate(mbgl_filter_obj, zoom, geometry_type, feature)) {
+        if (evaluate(mbgl_filter_obj, minzoom, maxzoom, geometry_type, feature)) {
             vtzero::geometry_feature_builder feature_builder{layer_builder};
             if (feature.has_id()) {
                 feature_builder.set_id(feature.id());
@@ -431,8 +438,15 @@ void AsyncShave(uv_work_t* req) {
                     if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
                         finalvt.add_existing_layer(layer); // Add to new tile
                     } else {
+                        auto const minimal_zoom = (baton->maxzoom && (*(baton->maxzoom) < baton->zoom || *(baton->maxzoom) < minzoom)) ? *(baton->maxzoom) : baton->zoom;
+                        auto maximum_zoom = minimal_zoom;
+                        if (baton->maxzoom && (*(baton->maxzoom) < minzoom || *(baton->maxzoom) <= minimal_zoom)) {
+                            // This is a tile of max-zoom (e.g. tiles till 16 and tile 16 contains features which should then tbe displayed at zoom level 19).
+                            // Every higher zoom will use this tile for overzooming -> check zoom levels till max zoom
+                            maximum_zoom = maxzoom;
+                        }
                         // Ampersand in front of var: "Pass as pointers"
-                        filterFeatures(&finalvt, baton->zoom, layer, mbgl_filter_obj, property_filter);
+                        filterFeatures(&finalvt, minimal_zoom, maximum_zoom, layer, mbgl_filter_obj, property_filter);
                     }
                 }
             }

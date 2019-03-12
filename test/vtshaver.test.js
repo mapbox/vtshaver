@@ -427,12 +427,10 @@ test('success: layers shaved successfully - specifying tileset maxzoom will keep
             filter: [
               ">=", ["zoom"], 15
             ],
-            minzoom: 15,
             maxzoom: 24
           }
         ]
-      }
-  ));
+      }));
 
   Shaver.shave(defaultBuffer, {filters: filters, zoom: 14, maxzoom: 14}, function(err, shavedTile) {
     if (err) throw err;
