@@ -424,15 +424,17 @@ test('success: layers shaved successfully - specifying tileset maxzoom will keep
       { layers: [
           {
             "source-layer": "poi_label",
-            filters: [
-              ">=", ["zoom"], 14
-            ]
+            filter: [
+              ">=", ["zoom"], 15
+            ],
+            minzoom: 15,
+            maxzoom: 24
           }
         ]
       }
   ));
 
-  Shaver.shave(defaultBuffer, {filters: filters, zoom: 1, maxzoom: 1}, function(err, shavedTile) {
+  Shaver.shave(defaultBuffer, {filters: filters, zoom: 14, maxzoom: 14}, function(err, shavedTile) {
     if (err) throw err;
     var postTile = vtinfo(shavedTile);
     t.ok(shavedTile);
