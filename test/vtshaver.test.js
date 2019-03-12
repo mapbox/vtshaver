@@ -418,6 +418,32 @@ test('success: layers shaved successfully - specifying tileset maxzoom will keep
   });
 });
 
+test('success: layers shaved successfully - specifying tileset maxzoom will keep layer data if < feature zoom', function(t) {
+  var sizeBefore = defaultBuffer.length;
+  var filters = new Shaver.Filters(Shaver.styleToFilters(
+      { layers: [
+          {
+            "source-layer": "poi_label",
+            filters: [
+              ">=", ["zoom"], 14
+            ]
+          }
+        ]
+      }
+  ));
+
+  Shaver.shave(defaultBuffer, {filters: filters, zoom: 1, maxzoom: 1}, function(err, shavedTile) {
+    if (err) throw err;
+    var postTile = vtinfo(shavedTile);
+    t.ok(shavedTile);
+    t.equals(postTile.layers.length, 1, 'shaved tile has one layer');
+    t.equals(postTile.layers[0].name, 'poi_label', 'shaved tile contains expected layer');
+    t.ok((shavedTile.length < sizeBefore && shavedTile.length !== 0), 'successfully shaved');
+    if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
+    t.end();
+  });
+});
+
 test('success: layers sucessfully shaved, feature filtering successfully retains the entire layer', function(t) {
   var filters = new Shaver.Filters(Shaver.styleToFilters(style_water));
   var sizeBefore = defaultBuffer.length;
