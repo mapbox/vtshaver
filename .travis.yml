@@ -141,8 +141,10 @@ matrix:
       script:
         - export PATH=$(pwd)/mason_packages/.link/bin/:${PATH}
         - which llvm-cov
-        - pip install --user codecov
-        - codecov --gcov-exec "llvm-cov gcov"
+        # upload CXX coverage
+        - ./node_modules/.bin/codecov --gcov-exec "llvm-cov gcov"
+        # upload JS coverage
+        - npm run upload-coverage
     # Clang format build
     - os: linux
       # can be generic since we don't need nodejs to run formatting
