@@ -8,6 +8,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var shaver = require('../');
 var vt = require('@mapbox/vector-tile').VectorTile;
 var pbf = require('pbf');
+var zlib = require('zlib');
 
 var usage = `usage:
 
@@ -70,18 +71,30 @@ try {
   process.exit(1);
 }
 
+var is_compressed = (buffer[0] === 0x1F && buffer[1] === 0x8B);
 var opts = {
   filters: filters,
   zoom: argv.zoom
 };
+
+if (is_compressed) {
+  opts.compress = {type: "gzip"};
+}
 
 if (argv.maxzoom) opts.maxzoom = argv.maxzoom;
 
 shaver.shave(buffer, opts, function(err, shavedBuffer) {
     if (err) throw err.message;
 
-    console.log('Before:\n',JSON.stringify(vtinfo(buffer),null,1));
-    console.log('After:\n',JSON.stringify(vtinfo(shavedBuffer),null,1));
+    if (is_compressed) {
+      var decompressed_og = zlib.gunzipSync(buffer);
+      console.log('Before:\n',JSON.stringify(vtinfo(decompressed_og),null,1));
+      var decompressed_res =   zlib.gunzipSync(shavedBuffer);
+      console.log('Before:\n',JSON.stringify(vtinfo(decompressed_res),null,1));
+    } else {
+      console.log('Before:\n',JSON.stringify(vtinfo(buffer),null,1));
+      console.log('After:\n',JSON.stringify(vtinfo(shavedBuffer),null,1));
+    }
 
     if (argv.out != undefined) {
         fs.writeFileSync(argv.out,shavedBuffer);
