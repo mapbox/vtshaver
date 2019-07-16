@@ -10,12 +10,16 @@ var tile = path.join(__dirname, 'fixtures', 'tiles', 'sf_16_10465_25329.vector.p
 var style = path.join(__dirname, 'fixtures', 'styles', 'bright-v9.json');
 
 
-test('vtshaver cli works', function(t) {
-  var args = [cli, '--tile', tile, '--style', style, '--zoom', 16];
-  spawn(process.execPath, args)
-      .on('error', function(err) { t.ifError(err, 'no error'); })
-      .on('close', function(code) {
-          t.equal(code, 0, 'exit 0');
-          t.end();
-      });
-});
+if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
+    test('vtshaver cli works - SKIPPED due to ASAN build', function(t) { t.end() });
+} else {
+    test('vtshaver cli works', function(t) {
+      var args = [cli, '--tile', tile, '--style', style, '--zoom', 16];
+      spawn(process.execPath, args)
+          .on('error', function(err) { t.ifError(err, 'no error'); })
+          .on('close', function(code) {
+              t.equal(code, 0, 'exit 0');
+              t.end();
+          });
+    });
+}
