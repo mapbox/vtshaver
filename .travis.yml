@@ -142,9 +142,7 @@ matrix:
       script:
         - export PATH=$(pwd)/mason_packages/.link/bin/:${PATH}
         - which llvm-cov
-        # upload CXX coverage
-        - ./node_modules/.bin/codecov --gcov-exec "llvm-cov gcov"
-        # upload JS coverage
+        # upload coverage
         - npm run upload-coverage
     # Clang format build
     - os: linux
