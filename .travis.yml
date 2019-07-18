@@ -143,9 +143,9 @@ matrix:
         - export PATH=$(pwd)/mason_packages/.link/bin/:${PATH}
         - which llvm-cov
         # upload coverage
-        # - pip install --user codecov
-        # - codecov --gcov-exec "llvm-cov gcov -l"
-        - ./node_modules/.bin/codecov --gcov-exec "llvm-cov gcov -l"
+        - pip install --user codecov
+        - codecov --gcov-exec "llvm-cov gcov -l"
+        # - ./node_modules/.bin/codecov --gcov-exec "llvm-cov gcov -l"
         - npm run upload-coverage
     # Clang format build
     - os: linux
