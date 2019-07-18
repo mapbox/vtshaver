@@ -681,7 +681,7 @@ test('succeed: expression filters with zoom condition - z16', function(t) {
 test('legacy + expression filter is supported', function(t) {
   var result = Shaver.styleToFilters(style_expressions_legacy);
   var filters = new Shaver.Filters(result);
-  assert.ok(filters);
+  t.ok(filters);
   t.end();
 });
 
