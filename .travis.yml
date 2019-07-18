@@ -145,8 +145,7 @@ matrix:
         # upload coverage
         - pip install --user codecov
         - codecov --gcov-exec "llvm-cov gcov -l"
-        # - ./node_modules/.bin/codecov --gcov-exec "llvm-cov gcov -l"
-        - npm run upload-coverage
+        - nyc report --reporter json && codecov -f ./coverage/coverage-final.json --disable=gcov
     # Clang format build
     - os: linux
       # can be generic since we don't need nodejs to run formatting

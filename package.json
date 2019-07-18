@@ -9,7 +9,6 @@
   },
   "scripts": {
     "test": "nyc --all --include bin --include lib tape test/*.test.js",
-    "upload-coverage": "nyc report --reporter json && codecov -f ./coverage/coverage-final.json --disable=gcov",
     "install": "node-pre-gyp install --fallback-to-build",
     "docs": "npm run docs-cpp && npm run docs-js",
     "docs-cpp": "documentation build src/*.cpp --re --polyglot -f md -o API-CPP.md",
@@ -29,7 +28,6 @@
     "@mapbox/vector-tile": "^1.3.1",
     "aws-sdk": "^2.4.7",
     "bytes": "^2.4.0",
-    "codecov": "^3.5.0",
     "d3-queue": "^3.0.1",
     "minimist": "^1.2.0",
     "nyc": "^14.1.1",
