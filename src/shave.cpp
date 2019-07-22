@@ -303,7 +303,7 @@ static bool evaluate(mbgl::style::Filter const& filter,
 {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
 
-    for(int zoom = floor(minzoom); zoom <= ceil(maxzoom); zoom++) {
+    for(int zoom = std::floor(minzoom); zoom <= std::ceil(maxzoom); zoom++) {
         // std::string const& key is dynamic and comes from the Filter object
         mbgl::style::expression::EvaluationContext context(zoom, &geomfeature);
         bool result = filter(context);
