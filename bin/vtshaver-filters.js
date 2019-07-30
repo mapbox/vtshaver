@@ -15,7 +15,7 @@ const usage = `usage:
     --sources: optional: list of one or more sources (comma separated) to display in the output (default is all sources)
     --pretty:  optional: whether to pretty print the output (default false). Pass '--pretty' to indent the JSON.
 
-  Will output a a json object describing each of the source-layers and their parsed metadata to be used for shaving.
+  Will output a json object describing each of the source-layers and their parsed metadata to be used for shaving.
 
   Example:
 
