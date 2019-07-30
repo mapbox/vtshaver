@@ -9,7 +9,7 @@ const styleToFilters = require('../lib/styleToFilters.js');
 
 const usage = `usage:
 
-  collapse-filters [args]
+  vtshaver-filters [args]
 
     --style:   required: path to a gl style to parse
     --sources: optional: list of one or more sources (comma separated) to display in the output (default is all sources)
@@ -19,7 +19,7 @@ const usage = `usage:
 
   Example:
 
-    collapse-filters --style style.json > meta.json
+    vtshaver-filters --style style.json > meta.json
 
 `
 
