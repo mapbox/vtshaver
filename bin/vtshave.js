@@ -21,7 +21,7 @@ var usage = `usage:
     --maxzoom: optional: the maxzoom of a tileset relevant to the tile buffer being shaved
     --out:     optional: pass a path if you want the shaved tile to be saved
 
-  Will output a summary of layers names with the feature count before and after shaving.
+  Will output a size comparison of how many bytes were shaved off the tile.
 
   Example:
 
