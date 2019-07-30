@@ -9,6 +9,7 @@ var shaver = require('../');
 var vt = require('@mapbox/vector-tile').VectorTile;
 var pbf = require('pbf');
 var zlib = require('zlib');
+var bytes = require('bytes');
 
 var usage = `usage:
 
@@ -46,21 +47,6 @@ if (argv.zoom == undefined) {
     return error("please provide the zoom of the tile being shaved");
 }
 
-function vtinfo(buffer) {
-  var tile = new vt(new pbf(buffer));
-  var info = {
-    layers : []
-  };
-  Object.keys(tile.layers).forEach(function(k) {
-    var lay = tile.layers[k];
-    info.layers.push({
-      name:k,
-      features:lay.length
-    })
-  });
-  return info;
-}
-
 var buffer = fs.readFileSync(argv.tile);
 var style_json = fs.readFileSync(argv.style);
 
@@ -86,15 +72,9 @@ if (argv.maxzoom) opts.maxzoom = argv.maxzoom;
 shaver.shave(buffer, opts, function(err, shavedBuffer) {
     if (err) throw err.message;
 
-    if (is_compressed) {
-      var decompressed_og = zlib.gunzipSync(buffer);
-      console.log('Before:\n',JSON.stringify(vtinfo(decompressed_og),null,1));
-      var decompressed_res =   zlib.gunzipSync(shavedBuffer);
-      console.log('Before:\n',JSON.stringify(vtinfo(decompressed_res),null,1));
-    } else {
-      console.log('Before:\n',JSON.stringify(vtinfo(buffer),null,1));
-      console.log('After:\n',JSON.stringify(vtinfo(shavedBuffer),null,1));
-    }
+    console.log('Before:\n',bytes(buffer.length));
+    console.log('After:\n',bytes(shavedBuffer.length));
+    console.log('Savings:\n',(shavedBuffer.length/buffer.length*100).toFixed(2)+'%');
 
     if (argv.out != undefined) {
         fs.writeFileSync(argv.out,shavedBuffer);
