@@ -22,12 +22,15 @@
     "nan": "^2.11.1",
     "node-pre-gyp": "^0.12.0"
   },
+  "bin": {
+    "vtshave": "./bin/vtshave.js"
+  },
   "devDependencies": {
     "@mapbox/mason-js": "^0.1.5",
     "@mapbox/mvt-fixtures": "^3.5.1",
     "@mapbox/vector-tile": "^1.3.1",
     "aws-sdk": "^2.4.7",
-    "bytes": "^2.4.0",
+    "bytes": "^2.5.0",
     "d3-queue": "^3.0.1",
     "minimist": "^1.2.0",
     "nyc": "^14.1.1",
