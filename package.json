@@ -23,7 +23,8 @@
     "node-pre-gyp": "^0.12.0"
   },
   "bin": {
-    "vtshave": "./bin/vtshave.js"
+    "vtshave": "./bin/vtshave.js",
+    "vtshaver-filters": "./bin/vtshaver-filters.js"
   },
   "devDependencies": {
     "@mapbox/mason-js": "^0.1.5",
