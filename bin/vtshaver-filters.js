@@ -33,9 +33,8 @@ if (argv.style == undefined || !fs.existsSync(argv.style)) {
     return error("must supply path to style.json");
 }
 
-const style_json = fs.readFileSync(argv.style);
-
 try {
+  const style_json = fs.readFileSync(argv.style);
   const meta = styleToFilters(JSON.parse(style_json));
   let indent = 0;
   if (argv.pretty !== undefined) {
