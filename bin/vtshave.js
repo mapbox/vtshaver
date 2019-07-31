@@ -72,9 +72,25 @@ if (argv.maxzoom) opts.maxzoom = argv.maxzoom;
 shaver.shave(buffer, opts, function(err, shavedBuffer) {
     if (err) throw err.message;
 
-    console.log('Before:\n',bytes(buffer.length));
-    console.log('After:\n',bytes(shavedBuffer.length));
-    console.log('Savings:\n',(shavedBuffer.length/buffer.length*100).toFixed(2)+'%');
+    if (is_compressed) {
+      console.log('Before (gzip):\n',bytes(buffer.length));
+      console.log('After (gzip):\n',bytes(shavedBuffer.length));
+      console.log('Savings (gzip):\n',(shavedBuffer.length/buffer.length*100).toFixed(2)+'%');
+      const og_decompressed = zlib.gunzipSync(buffer);
+      const shaved_decompressed = zlib.gunzipSync(shavedBuffer);
+      console.log('Before (raw):\n',bytes(og_decompressed.length));
+      console.log('After (raw):\n',bytes(shaved_decompressed.length));
+      console.log('Savings (raw):\n',(shaved_decompressed.length/og_decompressed.length*100).toFixed(2)+'%');
+    } else {
+      const og_compressed = zlib.gzipSync(buffer);
+      const shaved_compressed = zlib.gzipSync(shavedBuffer);
+      console.log('Before (gzip):\n',bytes(og_compressed.length));
+      console.log('After (gzip):\n',bytes(shaved_compressed.length));
+      console.log('Savings (gzip):\n',(shaved_compressed.length/og_compressed.length*100).toFixed(2)+'%');
+      console.log('Before (raw):\n',bytes(buffer.length));
+      console.log('After (raw):\n',bytes(shavedBuffer.length));
+      console.log('Savings (raw):\n',(shavedBuffer.length/buffer.length*100).toFixed(2)+'%');
+    }
 
     if (argv.out != undefined) {
         fs.writeFileSync(argv.out,shavedBuffer);
