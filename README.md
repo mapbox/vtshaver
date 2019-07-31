@@ -14,29 +14,56 @@
 npm install @mapbox/vtshaver
 ```
 
-# Usage
+If you want to install locally you can also do:
+
+```bash
+git clone https://github.com/mapbox/vtshaver
+cd vtshaver
+npm install
+```
+
+# API Usage
 
 * [styleToFilters](API-JavaScript.md#styletofilters)
 * [Filters](API-CPP.md#filters)
 * [shave](API-CPP.md#shave)
 
 # CLI
+
+Shaver provides 2 command line tools:
+
+## vtshave
+
 ```
 vtshave [args]
 
-  vtshave requires these options:
+  --tile:    required: path to the input vector tile
+  --style:   required: path to a gl style to use to shave
+  --zoom:    required: the zoom level
+  --maxzoom: optional: the maxzoom of a tileset relevant to the tile buffer being shaved
+  --out:     optional: pass a path if you want the shaved tile to be saved
 
-    --tile:  required: path to the input vector tile
-    --style: required: path to a gl style to use to shave
-    --zoom:  required: the zoom level
-    --maxzoom: optional: the maxzoom of a tileset relevant to the tile buffer being shaved
-    --out:   optional: pass a path if you want the shaved tile to be saved
+Will output a size comparison of how many bytes were shaved off the tile.
 
-  Will output a summary of layers names with the feature count before and after shaving.
+Example:
 
-  Example:
+  vtshave --tile tile.mvt --zoom 0 --maxzoom 16 --style style.json
+```
 
-    vtshave --tile tile.mvt --zoom 0 --maxzoom 16 --style style.json --out shaved.mvt
+## vtshaver-filters
+
+```
+vtshaver-filters [args]
+
+  --style:   required: path to a gl style to parse
+  --sources: optional: list of one or more sources (comma separated) to display in the output (default is all sources)
+  --pretty:  optional: whether to pretty print the output (default false). Pass '--pretty' to indent the JSON.
+
+Will output a json object describing each of the source-layers and their parsed metadata to be used for shaving.
+
+Example:
+
+  vtshaver-filters --style style.json > meta.json
 ```
 
 # Develop
