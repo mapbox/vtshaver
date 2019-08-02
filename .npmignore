@@ -18,3 +18,4 @@ API-CPP.md
 API-JavaScript.md
 .vscode
 *.*~
+.nyc_output
