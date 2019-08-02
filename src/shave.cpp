@@ -47,6 +47,8 @@ class AsyncBaton {
 
     /******* whether to compress *******/
     bool compress = false;
+    // whether to invert the filtering logic. If true then shaver will keep only features not relevant to the style
+    bool invert = false;
 
     /******* FILTER  *******/
     Filters* filters_obj{};
@@ -62,6 +64,7 @@ class AsyncBaton {
  * @param {Number} [options.maxzoom]
  * @param {Object} [options.compress]
  * @param {String} options.compress.type output a compressed shaved ['none'|'gzip']
+ * @param {Boolean} [options.invert]
  * @param {Function} callback - from whence the shaven vector tile comes
  * @example
  * var shaver = require('@mapbox/vtshaver');
@@ -74,6 +77,7 @@ class AsyncBaton {
  *     filters: filters,  // required
  *     zoom: 14,          // required
  *     maxzoom: 16,       // optional
+ *     invert: false // optional, default false
  *     compress: {        // optional
  *         type: 'none'
  *     }
@@ -134,6 +138,17 @@ NAN_METHOD(shave) {
             return;
         }
         maxzoom = maxzoom_val->Uint32Value();
+    }
+
+    optional<bool> invert;
+    if (options->Has(Nan::New("invert").ToLocalChecked())) {
+        // Validate optional "invert" value
+        v8::Local<v8::Value> invert_val = options->Get(Nan::New("invert").ToLocalChecked());
+        if (!invert_val->IsBoolean()) {
+            CallbackError("option 'invert' must be a boolean.", callback);
+            return;
+        }
+        invert = Nan::To<bool>(invert_val).FromJust();
     }
 
     // validate compress (OPTIONAL)
@@ -212,6 +227,9 @@ NAN_METHOD(shave) {
         // floating point value as styles support fractional zooms
         baton->zoom = static_cast<float>(zoom);
         baton->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : optional<float>();
+        if (invert) {
+          baton->invert = *invert;
+        }
         baton->compress = compress;
         // TODO(alliecrevier): pass compress_type and compress_level once we add support for more than gzip with default level: https://github.com/mapbox/gzip-hpp/blob/832d6262cecaa3b85c3c242e3617b4cfdbf3de23/include/gzip/compress.hpp#L19
         baton->filters_obj = Nan::ObjectWrap::Unwrap<Filters>(filters_object); // "Unwrap" takes the Javascript object and gives us the C++ object (gets rid of JS wrapper)
@@ -325,7 +343,8 @@ void filterFeatures(vtzero::tile_builder* finalvt,
                     float zoom,
                     vtzero::layer const& layer,
                     mbgl::style::Filter const& mbgl_filter_obj,
-                    Filters::filter_properties_type const& property_filter) {
+                    Filters::filter_properties_type const& property_filter,
+                    bool invert) {
     /**
     * TODOs:
     * - Instead of decoding/re-encoding, we'll want to add bytes...?
@@ -357,8 +376,9 @@ void filterFeatures(vtzero::tile_builder* finalvt,
         }
 
         // If evaluate() returns true, this feature includes properties that are relevant to the filter.
-        // So we add the feature to the final layer.
-        if (evaluate(mbgl_filter_obj, zoom, geometry_type, feature)) {
+        // If invert=false we keep relevant features
+        // if invert=true we keep only non-relevant features (useful for debugging unused data)
+        if (!invert == evaluate(mbgl_filter_obj, zoom, geometry_type, feature)) {
             vtzero::geometry_feature_builder feature_builder{layer_builder};
             if (feature.has_id()) {
                 feature_builder.set_id(feature.id());
@@ -424,15 +444,18 @@ void AsyncShave(uv_work_t* req) {
                 // If zoom level is relevant to filter
                 // OR if the style layer minzoom is styling overzoomed tiles...
                 // continue filtering. Else, no need to keep the layer.
-                if ((baton->zoom >= minzoom && baton->zoom <= maxzoom) ||
-                    (baton->maxzoom && *(baton->maxzoom) < minzoom)) {
-
+                bool keep_by_zoom = (baton->zoom >= minzoom && baton->zoom <= maxzoom) ||
+                    (baton->maxzoom && *(baton->maxzoom) < minzoom);
+                if (baton->invert) {
+                  keep_by_zoom = !keep_by_zoom;
+                }
+                if (keep_by_zoom) {
                     // Skip feature re-encoding when filter is null/empty AND we have no property k/v filter
-                    if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
+                    if (!baton->invert && std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
                         finalvt.add_existing_layer(layer); // Add to new tile
                     } else {
                         // Ampersand in front of var: "Pass as pointers"
-                        filterFeatures(&finalvt, baton->zoom, layer, mbgl_filter_obj, property_filter);
+                        filterFeatures(&finalvt, baton->zoom, layer, mbgl_filter_obj, property_filter, baton->invert);
                     }
                 }
             }

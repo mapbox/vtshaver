@@ -225,6 +225,29 @@ test('failure: Shaver.shave(): invalid compress type', function(t) {
   });
 });
 
+test('failure: Shaver.shave(): invalid invert type', function(t) {
+  var filters = new Shaver.Filters(Shaver.styleToFilters({
+    layers: [
+      {
+        "source-layer": "park_features",
+        filter: ["==","poi","slide"]
+      }
+    ]
+  }));
+
+  var options = {
+    filters: filters,
+    zoom: 14,
+    invert: 'invalid',
+  };
+
+  Shaver.shave(defaultBuffer, options, function(err, shavedTile) {
+    t.ok(err);
+    t.equals(err.message, 'option \'invert\' must be a boolean.', 'expected error message');
+    t.end();
+  });
+});
+
 test('failure: Shaver.shave(): invalid compress type value', function(t) {
   var filters = new Shaver.Filters(Shaver.styleToFilters({
     layers: [
@@ -357,6 +380,30 @@ test('success: layers shaved successfully - tile zoom irrelevant to style zoom',
     t.ok(shavedTile);
     t.equals(postTile.layers.length, 0, 'shaved tile has no layers because of zoom');
     t.equals(shavedTile.length, 0, 'expected tile size after filtering');
+    if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
+    t.end();
+  });
+});
+
+test('success: layers inverted successfully - tile zoom irrelevant to style zoom but still kept', function(t) {
+  var sizeBefore = defaultBuffer.length;
+  var filters = new Shaver.Filters(Shaver.styleToFilters({
+    layers: [
+      {
+        "source-layer": "poi_label",
+        filter: ["!=","maki","cafe"],
+        minzoom: 14,
+        maxzoom: 15
+      }
+    ]
+  }));
+
+  Shaver.shave(defaultBuffer, {filters: filters, zoom: 1, invert: true}, function(err, shavedTile) {
+    if (err) throw err;
+    var postTile = vtinfo(shavedTile);
+    t.ok(shavedTile);
+    t.equals(postTile.layers.length, 1, 'shaved tile has no layers because of zoom');
+    t.equals(shavedTile.length, 53, 'expected tile size after filtering');
     if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
     t.end();
   });
