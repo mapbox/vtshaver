@@ -228,7 +228,7 @@ NAN_METHOD(shave) {
         baton->zoom = static_cast<float>(zoom);
         baton->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : optional<float>();
         if (invert) {
-          baton->invert = *invert;
+            baton->invert = *invert;
         }
         baton->compress = compress;
         // TODO(alliecrevier): pass compress_type and compress_level once we add support for more than gzip with default level: https://github.com/mapbox/gzip-hpp/blob/832d6262cecaa3b85c3c242e3617b4cfdbf3de23/include/gzip/compress.hpp#L19
@@ -445,9 +445,9 @@ void AsyncShave(uv_work_t* req) {
                 // OR if the style layer minzoom is styling overzoomed tiles...
                 // continue filtering. Else, no need to keep the layer.
                 bool keep_by_zoom = (baton->zoom >= minzoom && baton->zoom <= maxzoom) ||
-                    (baton->maxzoom && *(baton->maxzoom) < minzoom);
+                                    (baton->maxzoom && *(baton->maxzoom) < minzoom);
                 if (baton->invert) {
-                  keep_by_zoom = !keep_by_zoom;
+                    keep_by_zoom = !keep_by_zoom;
                 }
                 if (keep_by_zoom) {
                     // Skip feature re-encoding when filter is null/empty AND we have no property k/v filter
