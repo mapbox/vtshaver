@@ -1,6 +1,6 @@
 # Vector Tile Shaver
 
-*Style-optimized vector tiles.* The shaver takes a **Mapbox Vector Tile** and a **Mapbox GL Style** and removes layers in the tile that are not used by the style to reduce the size of the tile. Read the feature release [blog post](https://www.mapbox.com/blog/style-optimized-vector-tiles/) and the [api-documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles) for more info.
+*Style-optimized vector tiles.* The shaver takes a **Mapbox Vector Tile** and a **Mapbox GL Style** and removes layers, features, and properties in the tile that are not used by the style to reduce the size of the tile. Read the feature release [blog post](https://www.mapbox.com/blog/style-optimized-vector-tiles/) and the [api-documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles) for more info.
 
 [![Build Status](https://travis-ci.com/mapbox/vtshaver.svg?branch=master)](https://travis-ci.com/mapbox/vtshaver)
 [![codecov](https://codecov.io/gh/mapbox/vtshaver/branch/master/graph/badge.svg)](https://codecov.io/gh/mapbox/vtshaver)
@@ -14,29 +14,56 @@
 npm install @mapbox/vtshaver
 ```
 
-# Usage
+If you want to install locally you can also do:
+
+```bash
+git clone https://github.com/mapbox/vtshaver
+cd vtshaver
+npm install
+```
+
+# API Usage
 
 * [styleToFilters](API-JavaScript.md#styletofilters)
 * [Filters](API-CPP.md#filters)
 * [shave](API-CPP.md#shave)
 
 # CLI
+
+Shaver provides 2 command line tools:
+
+## vtshave
+
 ```
 vtshave [args]
 
-  vtshave requires these options:
+  --tile:    required: path to the input vector tile
+  --style:   required: path to a gl style to use to shave
+  --zoom:    required: the zoom level
+  --maxzoom: optional: the maxzoom of a tileset relevant to the tile buffer being shaved
+  --out:     optional: pass a path if you want the shaved tile to be saved
 
-    --tile:  required: path to the input vector tile
-    --style: required: path to a gl style to use to shave
-    --zoom:  required: the zoom level
-    --maxzoom: optional: the maxzoom of a tileset relevant to the tile buffer being shaved
-    --out:   optional: pass a path if you want the shaved tile to be saved
+Will output a size comparison of how many bytes were shaved off the tile.
 
-  Will output a summary of layers names with the feature count before and after shaving.
+Example:
 
-  Example:
+  vtshave --tile tile.mvt --zoom 0 --maxzoom 16 --style style.json
+```
 
-    vtshave --tile tile.mvt --zoom 0 --maxzoom 16 --style style.json --out shaved.mvt
+## vtshaver-filters
+
+```
+vtshaver-filters [args]
+
+  --style:   required: path to a gl style to parse
+  --sources: optional: list of one or more sources (comma separated) to display in the output (default is all sources)
+  --pretty:  optional: whether to pretty print the output (default false). Pass '--pretty' to indent the JSON.
+
+Will output a json object describing each of the source-layers and their parsed metadata to be used for shaving.
+
+Example:
+
+  vtshaver-filters --style style.json > meta.json
 ```
 
 # Develop
