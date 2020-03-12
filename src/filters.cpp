@@ -24,6 +24,7 @@ void Filters::Initialize(v8::Local<v8::Object> target) {
     v8::Local<v8::FunctionTemplate> lcons = Nan::New<v8::FunctionTemplate>(Filters::New);
     lcons->InstanceTemplate()->SetInternalFieldCount(1);
     lcons->SetClassName(Nan::New("Filters").ToLocalChecked());
+    Nan::SetPrototypeMethod(lcons, "layers", layers);
     target->Set(Nan::New("Filters").ToLocalChecked(), lcons->GetFunction());
     constructor().Reset(lcons);
 }
@@ -81,7 +82,7 @@ NAN_METHOD(Filters::New) {
                     v8::Local<v8::Value> layer_name_val = layers->Get(i);
                     // LCOV_EXCL_START
                     // the layer_name_val is the name of the object, since we have checked the layers->Length(), which means layers->Get(i) can not be null undefined or others
-                    if (!layer_name_val->IsString() || layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
+                    if (layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
                         Nan::ThrowError("layer name must be a string and cannot be null or undefined");
                         return;
                     }
@@ -210,4 +211,15 @@ NAN_METHOD(Filters::New) {
 
         info.GetReturnValue().Set(info.This());
     }
+}
+
+NAN_METHOD(Filters::layers) {
+  auto layers = Nan::New<v8::Array>();
+  std::size_t idx = 0;
+  Filters* filters = Nan::ObjectWrap::Unwrap<Filters>(info.Holder());
+  for (auto const& lay : filters->filters) {
+    Nan::Set(layers, idx, Nan::New<v8::String>(lay.first).ToLocalChecked());
+    idx++;
+  }
+  info.GetReturnValue().Set(layers);
 }

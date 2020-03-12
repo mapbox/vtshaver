@@ -34,7 +34,7 @@ var style_one_feature = require('./fixtures/styles/one-feature.json');
 var style_expressions_legacy = require('./fixtures/styles/expressions-legacy.json');
 var style_expressions = require('./fixtures/styles/expressions.json');
 
-test.only('layer names as numbers', function(t) {
+test('layer names as numbers', function(t) {
   const filters = Shaver.styleToFilters({
     layers: [
       {
@@ -45,6 +45,7 @@ test.only('layer names as numbers', function(t) {
   t.deepEquals(filters,{ '1': { filters: true, minzoom: 0, maxzoom: 22, properties: [] } })
   var filter_obj = new Shaver.Filters(filters);
   t.ok(filter_obj);
+  t.deepEqual(filter_obj.layers(),['1']);
   t.end();
 })
 
