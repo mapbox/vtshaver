@@ -34,6 +34,20 @@ var style_one_feature = require('./fixtures/styles/one-feature.json');
 var style_expressions_legacy = require('./fixtures/styles/expressions-legacy.json');
 var style_expressions = require('./fixtures/styles/expressions.json');
 
+test.only('layer names as numbers', function(t) {
+  const filters = Shaver.styleToFilters({
+    layers: [
+      {
+         "source-layer" : "1"
+      }
+    ]
+  });
+  t.deepEquals(filters,{ '1': { filters: true, minzoom: 0, maxzoom: 22, properties: [] } })
+  var filter_obj = new Shaver.Filters(filters);
+  t.ok(filter_obj);
+  t.end();
+})
+
 // making sure we don't change our fixtures accidentally
 test('buffer pre-test', function(t) {
   t.equals(defaultBuffer.length, 7718, 'expected pbf size before filtering');
