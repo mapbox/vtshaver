@@ -37,7 +37,8 @@
         '-Wold-style-cast',
         '-Wno-error=unused-variable',
         '-Wno-error=unused-value',
-        '-DRAPIDJSON_HAS_STDSTRING=1'
+        '-DRAPIDJSON_HAS_STDSTRING=1',
+        '-Wno-deprecated-declarations'
       ]
   },
   'targets': [
