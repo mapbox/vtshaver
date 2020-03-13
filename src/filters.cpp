@@ -211,12 +211,12 @@ NAN_METHOD(Filters::New) {
 }
 
 NAN_METHOD(Filters::layers) {
-  auto layers = Nan::New<v8::Array>();
-  std::uint32_t idx = 0;
-  Filters* filters = Nan::ObjectWrap::Unwrap<Filters>(info.Holder());
-  for (auto const& lay : filters->filters) {
-    Nan::Set(layers, idx, Nan::New<v8::String>(lay.first).ToLocalChecked());
-    idx++;
-  }
-  info.GetReturnValue().Set(layers);
+    auto layers = Nan::New<v8::Array>();
+    std::uint32_t idx = 0;
+    auto* filters = Nan::ObjectWrap::Unwrap<Filters>(info.Holder());
+    for (auto const& lay : filters->filters) {
+        Nan::Set(layers, idx, Nan::New<v8::String>(lay.first).ToLocalChecked());
+        idx++;
+    }
+    info.GetReturnValue().Set(layers);
 }
