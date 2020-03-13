@@ -215,8 +215,7 @@ NAN_METHOD(Filters::layers) {
     std::uint32_t idx = 0;
     auto* filters = Nan::ObjectWrap::Unwrap<Filters>(info.Holder());
     for (auto const& lay : filters->filters) {
-        Nan::Set(layers, idx, Nan::New<v8::String>(lay.first).ToLocalChecked());
-        idx++;
+        Nan::Set(layers, idx++, Nan::New<v8::String>(lay.first).ToLocalChecked());
     }
     info.GetReturnValue().Set(layers);
 }
