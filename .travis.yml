@@ -1,7 +1,5 @@
 language: node_js
 
-sudo: false
-
 # enable c++11/14 builds
 addons:
   apt:
