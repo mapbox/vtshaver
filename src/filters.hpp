@@ -23,6 +23,7 @@ class Filters : public Nan::ObjectWrap {
 
     // method required for the constructor
     static NAN_METHOD(New); // Filters instance is stored here
+    static NAN_METHOD(layers);
 
     static Nan::Persistent<v8::FunctionTemplate>& constructor();
 
