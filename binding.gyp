@@ -97,18 +97,6 @@
             }
         }]
       ],
-      "conditions": [
-        [ "OS=='linux'", {
-            "libraries": [
-                     "<(module_root_dir)/mason_packages/.link/lib/libnu.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libpng.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libjpeg.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libwebp.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libsqlite3.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libicuuc.a"
-                   ]
-        }]
-      ],
       # Add to cpp glossary (or other doc in cpp repo) different types of binaries (.node, .a, static, dynamic (.so on linux and .dylib on osx))
       # talk from cppcon by person from Apple, exploration of every builds systems in c++ are awful since theyre system-specific
       'cflags': [
