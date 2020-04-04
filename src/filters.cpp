@@ -24,6 +24,7 @@ void Filters::Initialize(v8::Local<v8::Object> target) {
     v8::Local<v8::FunctionTemplate> lcons = Nan::New<v8::FunctionTemplate>(Filters::New);
     lcons->InstanceTemplate()->SetInternalFieldCount(1);
     lcons->SetClassName(Nan::New("Filters").ToLocalChecked());
+    Nan::SetPrototypeMethod(lcons, "layers", layers);
     target->Set(Nan::New("Filters").ToLocalChecked(), lcons->GetFunction());
     constructor().Reset(lcons);
 }
@@ -78,18 +79,15 @@ NAN_METHOD(Filters::New) {
                 std::uint32_t length = layers->Length();
                 for (std::uint32_t i = 0; i < length; ++i) {
                     // get v8::String containing layer name
-                    v8::Local<v8::Value> layer_name_val = layers->Get(i);
-                    // LCOV_EXCL_START
-                    // the layer_name_val is the name of the object, since we have checked the layers->Length(), which means layers->Get(i) can not be null undefined or others
-                    if (!layer_name_val->IsString() || layer_name_val->IsNull() || layer_name_val->IsUndefined()) {
+                    v8::Local<v8::Value> layer_key = layers->Get(i);
+                    // the layer_key is the name of the object, since we have checked the layers->Length(), which means layers->Get(i) can not be null undefined or others
+                    if (layer_key->IsNull() || layer_key->IsUndefined()) {
                         Nan::ThrowError("layer name must be a string and cannot be null or undefined");
                         return;
                     }
-                    // LCOV_EXCL_STOP
-                    auto layer_name = layer_name_val.As<v8::String>();
 
                     // get v8::Object containing layer
-                    v8::Local<v8::Value> layer_val = filters->Get(layer_name);
+                    v8::Local<v8::Value> layer_val = filters->Get(layer_key);
 
                     if (!layer_val->IsObject() || layer_val->IsNull() || layer_val->IsUndefined()) {
                         Nan::ThrowError("layer must be an object and cannot be null or undefined");
@@ -196,7 +194,7 @@ NAN_METHOD(Filters::New) {
                         return;
                     }
 
-                    std::string source_layer = *v8::String::Utf8Value(layer_name->ToString());
+                    std::string source_layer = *v8::String::Utf8Value(layer_key);
 
                     self->add_filter(std::move(source_layer), std::move(filter), std::move(property), minzoom, maxzoom);
                 }
@@ -210,4 +208,14 @@ NAN_METHOD(Filters::New) {
 
         info.GetReturnValue().Set(info.This());
     }
+}
+
+NAN_METHOD(Filters::layers) {
+    auto layers = Nan::New<v8::Array>();
+    std::uint32_t idx = 0;
+    auto* filters = Nan::ObjectWrap::Unwrap<Filters>(info.Holder());
+    for (auto const& lay : filters->filters) {
+        Nan::Set(layers, idx++, Nan::New<v8::String>(lay.first).ToLocalChecked());
+    }
+    info.GetReturnValue().Set(layers);
 }

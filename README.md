@@ -1,6 +1,6 @@
 # Vector Tile Shaver
 
-*Style-optimized vector tiles.* The shaver takes a **Mapbox Vector Tile** and a **Mapbox GL Style** and removes layers in the tile that are not used by the style to reduce the size of the tile. Read the feature release [blog post](https://www.mapbox.com/blog/style-optimized-vector-tiles/) and the [api-documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles) for more info.
+*Style-optimized vector tiles.* The shaver takes a **Mapbox Vector Tile** and a **Mapbox GL Style** and removes layers, features, and properties in the tile that are not used by the style to reduce the size of the tile. Read the feature release [blog post](https://www.mapbox.com/blog/style-optimized-vector-tiles/) and the [api-documentation](https://www.mapbox.com/api-documentation/#retrieve-tiles) for more info.
 
 [![Build Status](https://travis-ci.com/mapbox/vtshaver.svg?branch=master)](https://travis-ci.com/mapbox/vtshaver)
 [![codecov](https://codecov.io/gh/mapbox/vtshaver/branch/master/graph/badge.svg)](https://codecov.io/gh/mapbox/vtshaver)
