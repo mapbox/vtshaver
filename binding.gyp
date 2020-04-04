@@ -16,10 +16,15 @@
       # cflags (linux) and xcode (mac)
       'system_includes': [
         "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/include",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/src",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/platform"
+        "-isystem <(module_root_dir)/mason_packages/.link/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/variant/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/optional",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor//mapbox-base/deps/geometry.hpp/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor//mapbox-base/deps/geojson.hpp/include",
+        '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/wagyu/include',
+        "-isystem <(module_root_dir)/mason_packages/.link/src",
+        "-isystem <(module_root_dir)/mason_packages/.link/platform",
       ],
       # Flags we pass to the compiler to ensure the compiler
       # warns us about potentially buggy or dangerous code
@@ -73,7 +78,8 @@
       'sources': [
         './src/vtshaver.cpp',
         './src/shave.cpp',
-        './src/filters.cpp'
+        './src/filters.cpp',
+        './mason_packages/osx-x86_64/mbgl-core/1.5.1/src/mbgl/tile/geometry_tile_data.cpp'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
@@ -81,9 +87,6 @@
       # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
       # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
            "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
-      ],
-      'ldflags': [
-        '-Wl,-z,now'
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
@@ -114,7 +117,6 @@
       ],
       'xcode_settings': {
         'OTHER_LDFLAGS':[
-          '-Wl,-bind_at_load',
           '-framework Foundation'
         ],
         'OTHER_CPLUSPLUSFLAGS': [
