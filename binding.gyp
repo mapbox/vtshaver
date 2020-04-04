@@ -43,7 +43,9 @@
         '-Wno-error=unused-variable',
         '-Wno-error=unused-value',
         '-DRAPIDJSON_HAS_STDSTRING=1',
-        '-Wno-deprecated-declarations'
+        '-Wno-deprecated-declarations',
+        '-Wno-float-equal',
+        '-Wno-float-conversion'
       ]
   },
   'targets': [
@@ -79,7 +81,7 @@
         './src/vtshaver.cpp',
         './src/shave.cpp',
         './src/filters.cpp',
-        './mason_packages/osx-x86_64/mbgl-core/1.5.1/src/mbgl/tile/geometry_tile_data.cpp'
+        './src/geometry_tile_data.cpp'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
