@@ -8,7 +8,6 @@
 #include <gzip/utils.hpp>
 #include <iostream>
 #include <map>
-#include <mapbox/vector_tile.hpp>
 #include <mbgl/style/conversion.hpp>
 #include <mbgl/style/conversion/filter.hpp>
 #include <mbgl/style/filter.hpp>
@@ -43,7 +42,7 @@ class AsyncBaton {
 
     /******* ZOOMS *******/
     float zoom{};
-    optional<float> maxzoom{};
+    mbgl::optional<float> maxzoom{};
 
     /******* whether to compress *******/
     bool compress = false;
@@ -125,7 +124,7 @@ NAN_METHOD(shave) {
     zoom = zoom_val->Uint32Value();
 
     // check maxzoom, should be a number
-    optional<uint32_t> maxzoom;
+    mbgl::optional<uint32_t> maxzoom;
     if (options->Has(Nan::New("maxzoom").ToLocalChecked())) {
         // Validate optional "maxzoom" value
         v8::Local<v8::Value> maxzoom_val = options->Get(Nan::New("maxzoom").ToLocalChecked());
@@ -211,7 +210,7 @@ NAN_METHOD(shave) {
         // we convert to float here since comparison is against
         // floating point value as styles support fractional zooms
         baton->zoom = static_cast<float>(zoom);
-        baton->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : optional<float>();
+        baton->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : mbgl::optional<float>();
         baton->compress = compress;
         // TODO(alliecrevier): pass compress_type and compress_level once we add support for more than gzip with default level: https://github.com/mapbox/gzip-hpp/blob/832d6262cecaa3b85c3c242e3617b4cfdbf3de23/include/gzip/compress.hpp#L19
         baton->filters_obj = Nan::ObjectWrap::Unwrap<Filters>(filters_object); // "Unwrap" takes the Javascript object and gives us the C++ object (gets rid of JS wrapper)
@@ -242,33 +241,32 @@ struct mapping : vtzero::property_value_mapping {
 class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
     vtzero::feature const& feature_;
     mbgl::FeatureType ftype_;
+    mbgl::PropertyMap map_ = {};
+    mbgl::GeometryCollection geom_ = {};
 
   public:
     VTZeroGeometryTileFeature(vtzero::feature const& feature, mbgl::FeatureType ftype)
         : feature_(feature),
           ftype_(ftype) {
+            feature_.for_each_property([&](const vtzero::property& prop) {
+                map_.emplace(std::string(prop.key()), vtzero::convert_property_value<mbgl::Value, mapping>(prop.value()));
+                return true;
+            });
     }
 
     mbgl::FeatureType getType() const override {
         return ftype_;
     }
 
-    mbgl::optional<mbgl::FeatureIdentifier> getID() const override {
+    mbgl::FeatureIdentifier getID() const override {
         if (feature_.has_id()) {
             return {feature_.id()}; // Brackets create empty optional type
         }
-        return mbgl::optional<mbgl::FeatureIdentifier>{};
+        return mbgl::FeatureIdentifier{};
     }
 
-    std::unordered_map<std::string, mbgl::Value> getProperties() const override {
-        std::unordered_map<std::string, mbgl::Value> map;
-
-        feature_.for_each_property([&](const vtzero::property& prop) {
-            map.emplace(std::string(prop.key()), vtzero::convert_property_value<mapbox::geometry::value, mapping>(prop.value()));
-            return true;
-        });
-
-        return map;
+    const mbgl::PropertyMap& getProperties() const override {
+        return map_;
     }
 
     mbgl::optional<mbgl::Value> getValue(const std::string& key) const override {
@@ -279,7 +277,7 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
         feature_.for_each_property([&](vtzero::property&& prop) {
             // We are comparing data_views to avoid needing to allocate memory for the comparison if we were to compare strings instead.
             if (key == prop.key()) {
-                obj = vtzero::convert_property_value<mapbox::geometry::value, mapping>(prop.value());
+                obj = vtzero::convert_property_value<mbgl::Value, mapping>(prop.value());
                 return false;
             }
             return true;
@@ -288,9 +286,9 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
         return obj;
     }
 
-    mbgl::GeometryCollection getGeometries() const override {
+    const mbgl::GeometryCollection & getGeometries() const override {
         // LCOV_EXCL_START
-        return {};
+        return geom_;
         // LCOV_EXCL_STOP
     }
 };
