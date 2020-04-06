@@ -31,7 +31,9 @@
       'compiler_checks': [
         '-Wall',
         '-Wextra',
-        '-Weffc++',
+        # disabled since this now breaks on gl-native's platform/default/src/mbgl/layermanager/layer_manager.cpp
+        # which we cannot easily change here
+        #'-Weffc++',
         '-Wconversion',
         '-pedantic-errors',
         '-Wconversion',
