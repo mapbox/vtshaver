@@ -248,10 +248,10 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
     VTZeroGeometryTileFeature(vtzero::feature const& feature, mbgl::FeatureType ftype)
         : feature_(feature),
           ftype_(ftype) {
-            feature_.for_each_property([&](const vtzero::property& prop) {
-                map_.emplace(std::string(prop.key()), vtzero::convert_property_value<mbgl::Value, mapping>(prop.value()));
-                return true;
-            });
+        feature_.for_each_property([&](const vtzero::property& prop) {
+            map_.emplace(std::string(prop.key()), vtzero::convert_property_value<mbgl::Value, mapping>(prop.value()));
+            return true;
+        });
     }
 
     mbgl::FeatureType getType() const override {
@@ -286,7 +286,7 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
         return obj;
     }
 
-    const mbgl::GeometryCollection & getGeometries() const override {
+    const mbgl::GeometryCollection& getGeometries() const override {
         // LCOV_EXCL_START
         return geom_;
         // LCOV_EXCL_STOP
