@@ -81,7 +81,7 @@
         './src/vtshaver.cpp',
         './src/shave.cpp',
         './src/filters.cpp',
-        './src/geometry_tile_data.cpp'
+        './mason_packages/.link/src/mbgl/tile/geometry_tile_data.cpp'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
