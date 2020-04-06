@@ -20,9 +20,11 @@
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/variant/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/optional",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/include",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor//mapbox-base/deps/geometry.hpp/include",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor//mapbox-base/deps/geojson.hpp/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geometry.hpp/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geojson.hpp/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/wagyu/include',
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/nunicode/include",
+        '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/boost/include',
         "-isystem <(module_root_dir)/mason_packages/.link/src",
         "-isystem <(module_root_dir)/mason_packages/.link/platform",
       ],
@@ -89,6 +91,10 @@
         './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
         # mbgl::util::impl::ThreadLocalBase::~ThreadLocalBase()
         './mason_packages/.link/platform/default/src/mbgl/util/thread_local.cpp',
+        # mbgl::platform::Collator::resolvedLocale() const
+        './mason_packages/.link/platform/default/src/mbgl/i18n/collator.cpp',
+        # mbgl::util::convertUTF8ToUTF16(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+        './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
