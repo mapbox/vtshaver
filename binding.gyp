@@ -81,7 +81,12 @@
         './src/vtshaver.cpp',
         './src/shave.cpp',
         './src/filters.cpp',
-        './mason_packages/.link/src/mbgl/tile/geometry_tile_data.cpp'
+        './mason_packages/.link/src/mbgl/tile/geometry_tile_data.cpp',
+        './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
+        # mbgl::LayerManager::annotationsEnabled
+        './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
+        # mbgl::util::impl::ThreadLocalBase::~ThreadLocalBase()
+        './mason_packages/.link/platform/default/src/mbgl/util/thread_local.cpp',
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
