@@ -301,7 +301,7 @@ static auto evaluate(mbgl::style::Filter const& filter,
 {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
 
-    for (float zoom = std::lround(std::floor(minzoom)); zoom <= std::lround(std::ceil(maxzoom)); zoom++) {
+    for (long zoom = std::lround(std::floor(minzoom)); zoom <= std::lround(std::ceil(maxzoom)); zoom++) {
         // std::string const& key is dynamic and comes from the Filter object
         mbgl::style::expression::EvaluationContext context(static_cast<float>(zoom), &geomfeature);
         bool result = filter(context);
