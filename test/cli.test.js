@@ -13,9 +13,17 @@ var style = path.join(__dirname, 'fixtures', 'styles', 'bright-v9.json');
 if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
     test('vtshave cli works - SKIPPED due to ASAN build', function(t) { t.end() });
 } else {
+    // options for spawning the process - pipes logs and errors to test console log
+    const options = {
+        stdio: [
+            'inherit', // StdIn.
+            'pipe',    // StdOut.
+            'pipe'     // StdErr.
+        ]
+    };
     test('vtshave cli works', function(t) {
       var args = [vtshave_cli, '--tile', tile, '--style', style, '--zoom', 16];
-      spawn(process.execPath, args)
+      spawn(process.execPath, args, options)
           .on('error', function(err) { t.ifError(err, 'no error'); })
           .on('close', function(code) {
               t.equal(code, 0, 'exit 0');
@@ -25,7 +33,7 @@ if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
 
     test('vtshaver-filters cli works', function(t) {
       var args = [vtshaver_filters_cli, '--style', style];
-      spawn(process.execPath, args)
+      spawn(process.execPath, args, options)
           .on('error', function(err) { t.ifError(err, 'no error'); })
           .on('close', function(code) {
               t.equal(code, 0, 'exit 0');
@@ -35,7 +43,7 @@ if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
 
     test('vtshaver-filters cli works with --pretty and --sources', function(t) {
       var args = [vtshaver_filters_cli, '--style', style, '--pretty', '--sources', 'landuse_overlay,landuse'];
-      spawn(process.execPath, args)
+      spawn(process.execPath, args, options)
           .on('error', function(err) { t.ifError(err, 'no error'); })
           .on('close', function(code) {
               t.equal(code, 0, 'exit 0');
@@ -48,7 +56,7 @@ if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
 
     test('vtshaver-filters cli errors on invalid style arg', function(t) {
       var args = [vtshaver_filters_cli];
-      spawn(process.execPath, args)
+      spawn(process.execPath, args, options)
          .on('error', function(err) { t.ifError(err, 'no error'); })
           .on('close', function(code) {
               t.equal(code, 1, 'exit 1');
@@ -58,7 +66,7 @@ if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
 
     test('vtshaver-filters cli errors on invalid style that cannot be parsed', function(t) {
       var args = [vtshaver_filters_cli, '--style', __dirname];
-      spawn(process.execPath, args)
+      spawn(process.execPath, args, options)
          .on('error', function(err) { t.ifError(err, 'no error'); })
           .on('close', function(code) {
               t.equal(code, 1, 'exit 1');
