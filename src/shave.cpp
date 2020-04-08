@@ -423,8 +423,8 @@ void AsyncShave(uv_work_t* req) {
                 // get info from tuple
                 auto const& mbgl_filter_obj = std::get<0>(filter);
                 auto const& property_filter = std::get<1>(filter);
-                auto const minzoom = std::get<2>(filter);
-                auto const maxzoom = std::get<3>(filter);
+                float const minzoom = static_cast<float>(std::get<2>(filter));
+                float const maxzoom = static_cast<float>(std::get<3>(filter));
 
                 // If zoom level is relevant to filter
                 // OR if the style layer minzoom is styling overzoomed tiles...
@@ -436,8 +436,8 @@ void AsyncShave(uv_work_t* req) {
                     if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
                         finalvt.add_existing_layer(layer); // Add to new tile
                     } else {
-                        auto const minimal_zoom = (baton->maxzoom && (*(baton->maxzoom) < baton->zoom || *(baton->maxzoom) < minzoom)) ? *(baton->maxzoom) : baton->zoom;
-                        auto maximum_zoom = minimal_zoom;
+                        float const minimal_zoom = (baton->maxzoom && (*(baton->maxzoom) < baton->zoom || *(baton->maxzoom) < minzoom)) ? *(baton->maxzoom) : baton->zoom;
+                        float maximum_zoom = minimal_zoom;
                         if (baton->maxzoom && (*(baton->maxzoom) < minzoom || *(baton->maxzoom) <= minimal_zoom)) {
                             // This is a tile of max-zoom (e.g. tiles till 16 and tile 16 contains features which should then tbe displayed at zoom level 19).
                             // Every higher zoom will use this tile for overzooming -> check zoom levels till max zoom
