@@ -9,12 +9,13 @@ var vtshave_cli = path.resolve(__dirname, '..', 'bin', 'vtshave.js');
 var vtshaver_filters_cli = path.resolve(__dirname, '..', 'bin', 'vtshaver-filters.js');
 var tile = path.join(__dirname, 'fixtures', 'tiles', 'sf_16_10465_25329.vector.pbf');
 var style = path.join(__dirname, 'fixtures', 'styles', 'bright-v9.json');
+var styleWithoutLegacyExpressions = path.join(__dirname, 'fixtures', 'styles', 'expressions.json');
 
 if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
     test('vtshave cli works - SKIPPED due to ASAN build', function(t) { t.end() });
 } else {
     test('vtshave cli works', function(t) {
-      var args = [vtshave_cli, '--tile', tile, '--style', style, '--zoom', 16];
+      var args = [vtshave_cli, '--tile', tile, '--style', styleWithoutLegacyExpressions, '--zoom', 16];
       const child = spawn(process.execPath, args);
 
       var logs = '';
