@@ -28,7 +28,7 @@ def generate():
     for line in sys.stdin.readlines():
         if TOKEN_DENOTING_COMPILED_FILE in line:
             match = matcher.match(line)
-            if match:
+            if match and 'src/mbgl' not in match.group(2):
                 compile_commands.append({
                     "directory": build_dir,
                     "command": line.strip(),
