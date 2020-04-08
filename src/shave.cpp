@@ -468,12 +468,13 @@ void AfterShave(uv_work_t* req) {
         // create buffer from std string
         std::string& shaved_tile_buffer = *baton->shaved_tile;
         v8::Local<v8::Value> argv[2] = {Nan::Null(),
-                                        Nan::NewBuffer(&shaved_tile_buffer[0],
-                                                       shaved_tile_buffer.size(),
-                                                       [](char*, void* hint) {
-                                                           delete reinterpret_cast<std::string*>(hint);
-                                                       },
-                                                       baton->shaved_tile.release())
+                                        Nan::NewBuffer(
+                                            &shaved_tile_buffer[0],
+                                            shaved_tile_buffer.size(),
+                                            [](char*, void* hint) {
+                                                delete reinterpret_cast<std::string*>(hint);
+                                            },
+                                            baton->shaved_tile.release())
                                             .ToLocalChecked()};
         Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->cb), 2, static_cast<v8::Local<v8::Value>*>(argv));
     }
