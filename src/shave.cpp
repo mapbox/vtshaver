@@ -301,11 +301,13 @@ static auto evaluate(mbgl::style::Filter const& filter,
 {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
 
-    for (long zoom = std::lround(std::floor(minzoom)); zoom <= std::lround(std::ceil(maxzoom)); zoom++) {
+    for (int64 zoom = std::lround(std::floor(minzoom)); zoom <= std::lround(std::ceil(maxzoom)); zoom++) {
         // std::string const& key is dynamic and comes from the Filter object
         mbgl::style::expression::EvaluationContext context(static_cast<float>(zoom), &geomfeature);
         bool result = filter(context);
-        if (result) return result;
+        if (result) {
+            return result;
+        }
     }
     return false;
 }
@@ -423,8 +425,8 @@ void AsyncShave(uv_work_t* req) {
                 // get info from tuple
                 auto const& mbgl_filter_obj = std::get<0>(filter);
                 auto const& property_filter = std::get<1>(filter);
-                float const minzoom = static_cast<float>(std::get<2>(filter));
-                float const maxzoom = static_cast<float>(std::get<3>(filter));
+                auto const minzoom = static_cast<float>(std::get<2>(filter));
+                auto const maxzoom = static_cast<float>(std::get<3>(filter));
 
                 // If zoom level is relevant to filter
                 // OR if the style layer minzoom is styling overzoomed tiles...
