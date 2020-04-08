@@ -14,7 +14,7 @@
 #include <utility>
 
 // Single constructor used for any new instance of it.
-Nan::Persistent<v8::FunctionTemplate>& Filters::constructor() {
+auto Filters::constructor() -> Nan::Persistent<v8::FunctionTemplate>& {
     static Nan::Persistent<v8::FunctionTemplate> init;
     return init;
 } // LCOV_EXCL_LINE

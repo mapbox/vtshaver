@@ -109,7 +109,7 @@ NAN_METHOD(shave) {
     auto options = options_val.As<v8::Object>();
 
     // check zoom, should be a number
-    uint32_t zoom;
+    uint32_t zoom = 0;
     if (!options->Has(Nan::New("zoom").ToLocalChecked())) {
         CallbackError("option 'zoom' not provided. Please provide a zoom level for this tile.", callback);
         return;
@@ -254,22 +254,22 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
         });
     }
 
-    mbgl::FeatureType getType() const override {
+    auto getType() const -> mbgl::FeatureType override {
         return ftype_;
     }
 
-    mbgl::FeatureIdentifier getID() const override {
+    auto getID() const -> mbgl::FeatureIdentifier override {
         if (feature_.has_id()) {
             return {feature_.id()}; // Brackets create empty optional type
         }
         return mbgl::FeatureIdentifier{};
     }
 
-    const mbgl::PropertyMap& getProperties() const override {
+    auto getProperties() const -> const mbgl::PropertyMap& override {
         return map_;
     }
 
-    mbgl::optional<mbgl::Value> getValue(const std::string& key) const override {
+    auto getValue(const std::string& key) const -> mbgl::optional<mbgl::Value> override {
         mbgl::optional<mbgl::Value> obj;
 
         // If any of the property keys match the Filter key, we will keep the feature AND all of its properties.
@@ -286,17 +286,17 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
         return obj;
     }
 
-    const mbgl::GeometryCollection& getGeometries() const override {
+    auto getGeometries() const -> const mbgl::GeometryCollection& override {
         // LCOV_EXCL_START
         return geom_;
         // LCOV_EXCL_STOP
     }
 };
 
-static bool evaluate(mbgl::style::Filter const& filter,
+static auto evaluate(mbgl::style::Filter const& filter,
                      float zoom,
                      mbgl::FeatureType ftype,
-                     vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
+                     vtzero::feature const& feature) -> bool // This properties arg is our custom type that we use in our lambda function below.
 {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
     // std::string const& key is dynamic and comes from the Filter object
@@ -304,7 +304,7 @@ static bool evaluate(mbgl::style::Filter const& filter,
     return filter(context);
 }
 
-static mbgl::FeatureType convertGeom(vtzero::GeomType geometry_type) {
+static auto convertGeom(vtzero::GeomType geometry_type) -> mbgl::FeatureType {
     // Convert vtzero::geometry type to mbgl::FeatureType for the evaluate() function
     switch (geometry_type) {
     case vtzero::GeomType::POINT:
@@ -471,7 +471,7 @@ void AfterShave(uv_work_t* req) {
                                         Nan::NewBuffer(
                                             &shaved_tile_buffer[0],
                                             shaved_tile_buffer.size(),
-                                            [](char*, void* hint) {
+                                            [](char* /*unused*/, void* hint) {
                                                 delete reinterpret_cast<std::string*>(hint);
                                             },
                                             baton->shaved_tile.release())
