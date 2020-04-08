@@ -16,17 +16,26 @@
       # cflags (linux) and xcode (mac)
       'system_includes': [
         "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/include",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/src",
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/platform"
+        "-isystem <(module_root_dir)/mason_packages/.link/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/variant/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/optional",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geometry.hpp/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geojson.hpp/include",
+        '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/wagyu/include',
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/nunicode/include",
+        '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/boost/include',
+        "-isystem <(module_root_dir)/mason_packages/.link/src",
+        "-isystem <(module_root_dir)/mason_packages/.link/platform",
       ],
       # Flags we pass to the compiler to ensure the compiler
       # warns us about potentially buggy or dangerous code
       'compiler_checks': [
         '-Wall',
         '-Wextra',
-        '-Weffc++',
+        # disabled since this now breaks on gl-native's platform/default/src/mbgl/layermanager/layer_manager.cpp
+        # which we cannot easily change here
+        #'-Weffc++',
         '-Wconversion',
         '-pedantic-errors',
         '-Wconversion',
@@ -38,7 +47,9 @@
         '-Wno-error=unused-variable',
         '-Wno-error=unused-value',
         '-DRAPIDJSON_HAS_STDSTRING=1',
-        '-Wno-deprecated-declarations'
+        '-Wno-deprecated-declarations',
+        '-Wno-float-equal',
+        '-Wno-float-conversion'
       ]
   },
   'targets': [
@@ -73,7 +84,17 @@
       'sources': [
         './src/vtshaver.cpp',
         './src/shave.cpp',
-        './src/filters.cpp'
+        './src/filters.cpp',
+        './mason_packages/.link/src/mbgl/tile/geometry_tile_data.cpp',
+        './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
+        # mbgl::LayerManager::annotationsEnabled
+        './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
+        # mbgl::util::impl::ThreadLocalBase::~ThreadLocalBase()
+        './mason_packages/.link/platform/default/src/mbgl/util/thread_local.cpp',
+        # mbgl::platform::Collator::resolvedLocale() const
+        './mason_packages/.link/platform/default/src/mbgl/i18n/collator.cpp',
+        # mbgl::util::convertUTF8ToUTF16(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+        './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
@@ -81,9 +102,6 @@
       # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
       # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
            "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
-      ],
-      'ldflags': [
-        '-Wl,-z,now'
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
@@ -94,18 +112,6 @@
             }
         }]
       ],
-      "conditions": [
-        [ "OS=='linux'", {
-            "libraries": [
-                     "<(module_root_dir)/mason_packages/.link/lib/libnu.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libpng.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libjpeg.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libwebp.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libsqlite3.a",
-                     "<(module_root_dir)/mason_packages/.link/lib/libicuuc.a"
-                   ]
-        }]
-      ],
       # Add to cpp glossary (or other doc in cpp repo) different types of binaries (.node, .a, static, dynamic (.so on linux and .dylib on osx))
       # talk from cppcon by person from Apple, exploration of every builds systems in c++ are awful since theyre system-specific
       'cflags': [
@@ -114,7 +120,6 @@
       ],
       'xcode_settings': {
         'OTHER_LDFLAGS':[
-          '-Wl,-bind_at_load',
           '-framework Foundation'
         ],
         'OTHER_CPLUSPLUSFLAGS': [

@@ -4,7 +4,7 @@ language: node_js
 addons:
   apt:
     sources: [ 'ubuntu-toolchain-r-test' ]
-    packages: [ 'libstdc++-4.9-dev' ]
+    packages: [ 'libstdc++-5-dev' ]
 
 install:
   - node -v
@@ -38,10 +38,6 @@ matrix:
     - os: linux
       env: BUILDTYPE=release TOOLSET=cfi CXXFLAGS="-fsanitize=cfi -fvisibility=hidden" LDFLAGS="-fsanitize=cfi"
       node_js: 10
-    # linux publishable node v11/release
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 11
     # linux publishable node v10/release
     - os: linux
       env: BUILDTYPE=release
@@ -50,47 +46,11 @@ matrix:
     - os: linux
       env: BUILDTYPE=debug
       node_js: 10
-    # linux publishable node v8/release
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 8
-    # linux publishable node v8/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 8
-    # linux publishable node v6/release
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 6
-    # linux publishable node v6/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 6
     # osx publishable node v10/release
     - os: osx
-      osx_image: xcode9.3
-      env: BUILDTYPE=release
-      node_js: 11
-    # osx publishable node v10/release
-    - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode11.3
       env: BUILDTYPE=release
       node_js: 10
-    # osx publishable node v8/release
-    - os: osx
-      osx_image: xcode9.3
-      env: BUILDTYPE=release
-      node_js: 8
-    # osx publishable node v6/release
-    - os: osx
-      osx_image: xcode9.3
-      env: BUILDTYPE=release
-      node_js: 6
-    # osx publishable node v6/debug
-    - os: osx
-      osx_image: xcode9.3
-      env: BUILDTYPE=debug
-      node_js: 6
     # linux sanitizer build node v6/debug
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
@@ -98,19 +58,18 @@ matrix:
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
-        - sed -ie 's/20f880e/20f880e-asan/g' mason-versions.ini
         - make sanitize
       # Overrides `before_script` (tests are already run in `make sanitize`)
       before_script:
         - true
     # osx sanitizer build node v6/debug
     - os: osx
+      osx_image: xcode11.3
       env: BUILDTYPE=debug TOOLSET=asan
       node_js: 10
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
-        - sed -ie 's/20f880e/20f880e-asan/g' mason-versions.ini
         - make sanitize
       # Overrides `before_script` (tests are already run in `make sanitize`)
       before_script:

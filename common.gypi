@@ -38,7 +38,7 @@
           'NDEBUG'
         ],
         'cflags': [
-         '-flto'
+         '-flto', '-fvisibility=hidden'
         ],
         'ldflags': [
          '-flto',
@@ -50,7 +50,7 @@
             '-O2'
           ],
           'OTHER_LDFLAGS':[ '-flto' ],
-          'OTHER_CPLUSPLUSFLAGS': [ '-flto' ],
+          'OTHER_CPLUSPLUSFLAGS': [ '-flto', '-fvisibility=hidden' ],
           'GCC_OPTIMIZATION_LEVEL': '3',
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
           'DEAD_CODE_STRIPPING': 'YES',
