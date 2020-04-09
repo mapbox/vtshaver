@@ -1,8 +1,9 @@
 #pragma once
 
-#include <nan.h>
+#include <napi.h>
+#include <uv.h>
 
 // shave, custom async method
-NAN_METHOD(shave);
+Napi::Value shave(const Napi::CallbackInfo& info);
 void AsyncShave(uv_work_t* req);
 void AfterShave(uv_work_t* req);

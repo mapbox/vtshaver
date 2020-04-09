@@ -12,7 +12,7 @@
 #include <mbgl/style/conversion/filter.hpp>
 #include <mbgl/style/filter.hpp>
 #include <mbgl/tile/geometry_tile_data.hpp>
-#include <node/src/node_conversion.hpp>
+//#include <node/src/node_conversion.hpp>
 
 #include <tuple>
 #include <utility>
@@ -22,20 +22,24 @@
 #include <vtzero/property_mapper.hpp>
 #include <vtzero/vector_tile.hpp>
 
-static void CallbackError(const std::string& message, v8::Local<v8::Function> callback) {
-    v8::Local<v8::Value> argv[1] = {Nan::Error(message.c_str())};
-    Nan::MakeCallback(Nan::GetCurrentContext()->Global(), callback, 1, static_cast<v8::Local<v8::Value>*>(argv));
+inline Napi::Value CallbackError(std::string const& message, Napi::CallbackInfo const& info) {
+    Napi::Object obj = Napi::Object::New(info.Env());
+    obj.Set("message", message);
+    auto func = info[info.Length() - 1].As<Napi::Function>();
+    // ^^^ here we assume that info has a valid callback function
+    // TODO: consider changing either method signature or adding internal checks
+    return func.Call({obj});
 }
 
-class AsyncBaton {
-  public:
-    uv_work_t request{};                // required
-    Nan::Persistent<v8::Function> cb{}; // callback function type (will stay alive until you say it can be destroyed)
+struct QueryData {
+
+    //uv_work_t request{};                // required
+    //Napi::FunctionReference cb{}; // callback function type (will stay alive until you say it can be destroyed)
     std::string error_name{};
     std::string result{};
 
     /******* BUFFER *******/
-    Nan::Persistent<v8::Object> buffer{}; // Persistent: hey v8, dont destroy this
+    Napi::Reference<Napi::Buffer<char>> buffer{}; // Persistent: hey v8, dont destroy this
     const char* data{};                   // * --> pointer...C string (array of chars)
     std::size_t dataLength{};             // using "std" namespace is best-practice
     std::unique_ptr<std::string> shaved_tile{};
@@ -50,6 +54,27 @@ class AsyncBaton {
     /******* FILTER  *******/
     Filters* filters_obj{};
 };
+
+
+struct Shaver : Napi::AsyncWorker {
+    using Base = Napi::AsyncWorker;
+
+    Shaver(std::unique_ptr<QueryData> &&  query_data, Napi::Function & callback)
+        : Base(callback),
+          query_data_(std::move(query_data)) {}
+
+    void Execute() override {
+        std::cerr << "Execute() "<< std::endl;
+        SetError("FAIL");
+    }
+    void OnOK() override {
+        Napi::HandleScope scope(Env());
+        Callback().Call({Env().Null(), Env().Null()});
+    }
+private:
+    std::unique_ptr<QueryData> query_data_;
+};
+
 
 /**
  * Shave off unneeded layers and features, asynchronously
@@ -68,7 +93,7 @@ class AsyncBaton {
  * var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
  * var style = require('/path/to/style.json');
  * var filters = new shaver.Filters(shaver.styleToFilters(style));
- * 
+ *
  * var options = {
  *     filters: filters,  // required
  *     zoom: 14,          // required
@@ -77,150 +102,145 @@ class AsyncBaton {
  *         type: 'none'
  *     }
  * };
- * 
+ *
  * shaver.shave(buffer, options, function(err, shavedTile) {
  *     if (err) throw err;
  *     console.log(shavedTile); // => vector tile buffer
  * });
  */
-NAN_METHOD(shave) {
+Napi::Value shave(Napi::CallbackInfo const& info) {
     // CALLBACK: ensure callback is a function
-    v8::Local<v8::Value> callback_val = info[info.Length() - 1];
-    if (!callback_val->IsFunction() || callback_val->IsNull() || callback_val->IsUndefined()) {
-        Nan::ThrowError("last argument must be a callback function");
-        return;
+    std::size_t length = info.Length();
+    if (length == 0) {
+        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
+        return info.Env().Null();
     }
-    v8::Local<v8::Function> callback = callback_val.As<v8::Function>();
+    Napi::Value callback_val = info[info.Length() - 1];
+    if (!callback_val.IsFunction()) {
+        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
+        return info.Env().Null();
+    }
+
+    Napi::Function callback = callback_val.As<Napi::Function>();
 
     // BUFFER: check first argument, should be a pbf object
-    v8::Local<v8::Value> buffer_val = info[0];
-    if (!buffer_val->IsObject() || !node::Buffer::HasInstance(buffer_val) || buffer_val->IsNull() || buffer_val->IsUndefined()) {
-        CallbackError("first arg 'buffer' must be a Protobuf buffer object", callback);
-        return;
+
+    if (!info[0].IsBuffer()) {
+        return CallbackError("first arg 'buffer' must be a Protobuf buffer object", info);
     }
-    auto buffer = buffer_val->ToObject();
+    auto buffer = info[0].As<Napi::Buffer<char>>();//buffer_val->ToObject();
 
     // OPTIONS: check second argument, should be an 'options' object
-    v8::Local<v8::Value> options_val = info[1];
-    if (!options_val->IsObject() || options_val->IsNull() || options_val->IsUndefined()) {
-        CallbackError("second arg 'options' must be an object", callback);
-        return;
+    Napi::Value options_val = info[1];
+    if (!options_val.IsObject()) {
+        return CallbackError("second arg 'options' must be an object", info);
     }
-    auto options = options_val.As<v8::Object>();
+    auto options = options_val.As<Napi::Object>();
 
     // check zoom, should be a number
-    uint32_t zoom = 0;
-    if (!options->Has(Nan::New("zoom").ToLocalChecked())) {
-        CallbackError("option 'zoom' not provided. Please provide a zoom level for this tile.", callback);
-        return;
+    std::uint32_t zoom = 0;
+    if (options.Has("zoom")) {
+        Napi::Value zoom_val = options.Get("zoom");
+        if (!zoom_val.IsNumber()) {
+            return CallbackError("option 'zoom' must be a positive integer", info);
+        }
+        zoom = zoom_val.As<Napi::Number>();
     }
 
-    v8::Local<v8::Value> zoom_val = options->Get(Nan::New("zoom").ToLocalChecked());
-    if (!zoom_val->IsUint32()) {
-        CallbackError("option 'zoom' must be a positive integer.", callback);
-        return;
-    }
-
-    zoom = zoom_val->Uint32Value();
+    //zoom = zoom_val.As<Napi::Number>().Uint32Value();
 
     // check maxzoom, should be a number
-    mbgl::optional<uint32_t> maxzoom;
-    if (options->Has(Nan::New("maxzoom").ToLocalChecked())) {
+    mbgl::optional<std::uint32_t> maxzoom;
+    if (options.Has("maxzoom")) {
         // Validate optional "maxzoom" value
-        v8::Local<v8::Value> maxzoom_val = options->Get(Nan::New("maxzoom").ToLocalChecked());
-        if (!maxzoom_val->IsUint32()) {
-            CallbackError("option 'maxzoom' must be a positive integer.", callback);
-            return;
+        Napi::Value maxzoom_val = options.Get("maxzoom");
+        if (!maxzoom_val.IsNumber()) {
+            return CallbackError("option 'maxzoom' must be a positive integer.", info);
         }
-        maxzoom = maxzoom_val->Uint32Value();
+        maxzoom = maxzoom_val.As<Napi::Number>().Uint32Value();
     }
 
     // validate compress (OPTIONAL)
     bool compress = false;
-    if (options->Has(Nan::New("compress").ToLocalChecked())) {
-        v8::Local<v8::Value> compress_options_val = options->Get(Nan::New("compress").ToLocalChecked());
-        v8::Local<v8::Object> compress_options = compress_options_val.As<v8::Object>();
+    if (options.Has("compress")) {
+        Napi::Value compress_options_val = options.Get("compress");
+        Napi::Object compress_options = compress_options_val.As<Napi::Object>();
 
         // compress.type is REQUIRED
-        if (!compress_options->Has(Nan::New("type").ToLocalChecked())) {
-            CallbackError("compress option 'type' not provided. Please provide a compression type if using the compress option", callback);
-            return;
+        if (!compress_options.Has("type")) {
+            return CallbackError("compress option 'type' not provided. Please provide "
+                                 "a compression type if using the compress option", info);
         }
 
-        v8::Local<v8::Value> compress_type = compress_options->Get(Nan::New("type").ToLocalChecked());
-
-        if (!compress_type->IsString()) {
-            CallbackError("compress option 'type' must be a string", callback);
-            return;
+        Napi::Value compress_type = compress_options.Get("type");
+        if (!compress_type.IsString()) {
+            return CallbackError("compress option 'type' must be a string", info);
         }
 
         // Convert from v8 Object to std::string so we can check compress type value
-        Nan::Utf8String utf8str(compress_type);
-        std::string str(*utf8str);
-
+        std::string str = compress_type.As<Napi::String>();
         // compress.type can only be 'none' and 'gzip' for now
         if (str != "none" && str != "gzip") {
-            CallbackError("compress type must equal 'none' or 'gzip'", callback);
-            return;
+            return CallbackError("compress type must equal 'none' or 'gzip'", info);
         }
         if (str == "gzip") {
             compress = true;
         }
 
         // compress.level is OPTIONAL
-        if (compress_options->Has(Nan::New("level").ToLocalChecked())) {
-            v8::Local<v8::Value> compress_level = compress_options->Get(Nan::New("level").ToLocalChecked());
-            if (!compress_level->IsUint32()) {
-                CallbackError("compress option 'level' must be an unsigned integer", callback);
-                return;
+        if (compress_options.Has("level")) {
+            Napi::Value compress_level = compress_options.Get("level");
+            if (!compress_level.IsNumber()) {
+                return CallbackError("compress option 'level' must be an unsigned integer", info);
             }
         }
     }
 
     // `filters` comes in as a shaver.Filters object
-    if (options->Has(Nan::New("filters").ToLocalChecked())) {
-        v8::Local<v8::Value> filters_val = options->Get(Nan::New("filters").ToLocalChecked());
-
+    if (options.Has("filters")) {
+        Napi::Value filters_val = options.Get("filters");
         // options.filters will now be an Object
-        if (filters_val->IsNull() ||
-            filters_val->IsUndefined() ||
-            !filters_val->IsObject()) {
-            CallbackError(
+        if (filters_val.IsNull() ||
+            filters_val.IsUndefined() ||
+            !filters_val.IsObject()) {
+            return CallbackError(
                 "option 'filters' must be a shaver.Filters object",
-                callback);
-            return;
+                info);
         }
 
-        v8::Local<v8::Object> filters_object = filters_val->ToObject();
+        Napi::Object filters_object = filters_val.As<Napi::Object>();
 
         // This is the same as calling InstanceOf() in JS-world
-        if (!Nan::New(Filters::constructor())->HasInstance(filters_object)) {
-            CallbackError(
+        // [ /Nan::New\((\w+)\)->HasInstance\((\w+)\)/g, '$2.InstanceOf($1.Value())' ]
+        if (!filters_object.InstanceOf(Filters::constructor.Value())) {
+            return CallbackError(
                 "option 'filters' must be a shaver.Filters object",
-                callback);
-            return;
+                info);
         }
 
-        // set up the baton to pass into our threadpool
-        auto* baton = new AsyncBaton(); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Nan::AysncWorker
-        baton->request.data = baton;
-        baton->data = node::Buffer::Data(buffer);
-        baton->dataLength = node::Buffer::Length(buffer);
-        baton->shaved_tile = std::make_unique<std::string>();
+        // set up the query_data to pass into our threadpool
+        auto query_data = std::make_unique<QueryData>(); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
+        //query_data->request.data = baton;
+        query_data->data = buffer.As<Napi::Buffer<char>>().Data();
+        query_data->dataLength = buffer.As<Napi::Buffer<char>>().Length();
+        query_data->shaved_tile = std::make_unique<std::string>();
         // we convert to float here since comparison is against
         // floating point value as styles support fractional zooms
-        baton->zoom = static_cast<float>(zoom);
-        baton->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : mbgl::optional<float>();
-        baton->compress = compress;
+        query_data->zoom = static_cast<float>(zoom);
+        query_data->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : mbgl::optional<float>();
+        query_data->compress = compress;
         // TODO(alliecrevier): pass compress_type and compress_level once we add support for more than gzip with default level: https://github.com/mapbox/gzip-hpp/blob/832d6262cecaa3b85c3c242e3617b4cfdbf3de23/include/gzip/compress.hpp#L19
-        baton->filters_obj = Nan::ObjectWrap::Unwrap<Filters>(filters_object); // "Unwrap" takes the Javascript object and gives us the C++ object (gets rid of JS wrapper)
-        baton->filters_obj->_ref();                                            // This is saying "I'm in use, don't garbage collect me"
-        baton->buffer.Reset(buffer.As<v8::Object>());
-        baton->cb.Reset(callback);
-        uv_queue_work(uv_default_loop(), &baton->request, AsyncShave, reinterpret_cast<uv_after_work_cb>(AfterShave));
+        //query_data->filters_obj = filters_object;//.Unwrap<Filters>(); // "Unwrap" takes the Javascript object and gives us the C++ object (gets rid of JS wrapper)
+        //query_data->filters_obj->_ref();                                            // This is saying "I'm in use, don't garbage collect me"
+        //query_data->buffer.Reset(buffer.As<Napi::Object>());
+        //query_data->cb.Reset(callback);
+        //uv_queue_work(uv_default_loop(), &baton->request, AsyncShave, reinterpret_cast<uv_after_work_cb>(AfterShave));
+
+        auto* worker = new Shaver{std::move(query_data), callback};
+        worker->Queue();
+        return info.Env().Undefined();
     } else {
-        CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", callback);
-        return;
+        return CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", info);
     }
 }
 
@@ -381,9 +401,11 @@ void filterFeatures(vtzero::tile_builder* finalvt,
     });
 }
 
+
 // This is where we actually shave
+/*
 void AsyncShave(uv_work_t* req) {
-    auto* baton = static_cast<AsyncBaton*>(req->data);    // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Nan::AysncWorker
+    auto* baton = static_cast<AsyncBaton*>(req->data);    // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
     vtzero::data_view dv{baton->data, baton->dataLength}; // Read input data
     std::string uncompressed;
 
@@ -453,35 +475,37 @@ void AsyncShave(uv_work_t* req) {
         baton->error_name = ex.what();
     }
 } // end AsyncShave()
-
+*/
 // handle results from AsyncShave - if there are errors return those
 // otherwise return the type & info to our callback
+/*
 void AfterShave(uv_work_t* req) {
-    Nan::HandleScope scope;
-    auto* baton = static_cast<AsyncBaton*>(req->data); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Nan::AysncWorker
+    Napi::HandleScope scope(env);
+    auto* baton = static_cast<AsyncBaton*>(req->data); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
 
     if (!baton->error_name.empty()) {
-        v8::Local<v8::Value> argv[1] = {Nan::Error(baton->error_name.c_str())};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->cb), 1, static_cast<v8::Local<v8::Value>*>(argv));
+        Napi::Value argv[1] = {Napi::Error::New(env, baton->error_name.c_str())};
+        Napi::New(env, baton->cb).MakeCallback(Napi::GetCurrentContext()->Global(), 1, static_cast<Napi::Value*>(argv));
     } else // no errors, lets return data
     {
         // create buffer from std string
         std::string& shaved_tile_buffer = *baton->shaved_tile;
-        v8::Local<v8::Value> argv[2] = {Nan::Null(),
-                                        Nan::NewBuffer(
+        Napi::Value argv[2] = {env.Null(),
+                                        Napi::Buffer<char>::New(env,
                                             &shaved_tile_buffer[0],
                                             shaved_tile_buffer.size(),
-                                            [](char* /*unused*/, void* hint) {
+                                            [](char*, void* hint) {
                                                 delete reinterpret_cast<std::string*>(hint);
                                             },
                                             baton->shaved_tile.release())
-                                            .ToLocalChecked()};
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), Nan::New(baton->cb), 2, static_cast<v8::Local<v8::Value>*>(argv));
+                                            };
+        Napi::New(env, baton->cb).MakeCallback(Napi::GetCurrentContext()->Global(), 2, static_cast<Napi::Value*>(argv));
     }
 
     // Release, mark as garbage collectible
     baton->cb.Reset();
     baton->buffer.Reset();
     baton->filters_obj->_unref();
-    delete baton; // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Nan::AysncWorker
+    delete baton; // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
 }
+*/
