@@ -211,7 +211,7 @@ void filterFeatures(vtzero::tile_builder* finalvt,
 struct Shaver : Napi::AsyncWorker {
     using Base = Napi::AsyncWorker;
 
-    Shaver(std::unique_ptr<QueryData>&& query_data, Napi::Function& callback)
+    Shaver(std::unique_ptr<QueryData>&& query_data, Napi::Function const& callback)
         : Base(callback),
           query_data_(std::move(query_data)) {}
 
@@ -284,7 +284,7 @@ struct Shaver : Napi::AsyncWorker {
         Napi::HandleScope scope(Env());
         // create buffer from std string
         std::string& shaved_tile_buffer = *query_data_->shaved_tile;
-        Napi::Value argv = Napi::Buffer<char>::New(
+        auto buffer = Napi::Buffer<char>::New(
             Env(),
             &shaved_tile_buffer[0],
             shaved_tile_buffer.size(),
@@ -292,7 +292,7 @@ struct Shaver : Napi::AsyncWorker {
                 delete str_ptr;
             },
             query_data_->shaved_tile.release());
-        Callback().Call({Env().Null(), argv});
+        Callback().Call({Env().Null(), buffer});
     }
 
   private:
