@@ -22,6 +22,7 @@
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geometry.hpp/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geojson.hpp/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/extras/rapidjson/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/wagyu/include',
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/nunicode/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/boost/include',
