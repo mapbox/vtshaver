@@ -36,6 +36,7 @@ class Filters : public Napi::ObjectWrap<Filters> {
     auto get_filters() const -> filters_type const& {
         return filters;
     }
+
   private:
     filters_type filters{};
 };
