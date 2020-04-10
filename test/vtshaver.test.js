@@ -757,7 +757,7 @@ test('failure: creating Shaver.Filters() without new', function(t) {
     t.ok(false);
   } catch (err) {
     t.ok(err);
-    t.equals(err.message, 'Cannot call constructor as function, you need to use \'new\' keyword');
+    t.equals(err.message, 'Class constructors cannot be invoked without \'new\'');
     t.end();
   }
 });
