@@ -36,14 +36,6 @@ class Filters : public Napi::ObjectWrap<Filters> {
     auto get_filters() const -> filters_type const& {
         return filters;
     }
-
-    // Grabs the persisted Filters ref
-    // Calling this within vt_shaver when creating the baton
-    //void _ref() { Ref(); }
-    // To setup for garbage collection
-    //void _unref() { Unref(); }
-
   private:
-
     filters_type filters{};
 };
