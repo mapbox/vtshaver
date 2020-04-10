@@ -6,13 +6,11 @@
 #include <gzip/compress.hpp>
 #include <gzip/decompress.hpp>
 #include <gzip/utils.hpp>
-#include <iostream>
 #include <map>
 #include <mbgl/style/conversion.hpp>
 #include <mbgl/style/conversion/filter.hpp>
 #include <mbgl/style/filter.hpp>
 #include <mbgl/tile/geometry_tile_data.hpp>
-//#include <node/src/node_conversion.hpp>
 
 #include <tuple>
 #include <utility>
@@ -33,15 +31,13 @@ inline Napi::Value CallbackError(std::string const& message, Napi::CallbackInfo 
 
 struct QueryData {
 
-    //uv_work_t request{};                // required
-    //Napi::FunctionReference cb{}; // callback function type (will stay alive until you say it can be destroyed)
     std::string error_name{};
     std::string result{};
 
     /******* BUFFER *******/
     Napi::Reference<Napi::Buffer<char>> buffer{}; // Persistent: hey v8, dont destroy this
-    const char* data{};                   // * --> pointer...C string (array of chars)
-    std::size_t dataLength{};             // using "std" namespace is best-practice
+    const char* data{};                           // * --> pointer...C string (array of chars)
+    std::size_t dataLength{};                     // using "std" namespace is best-practice
     std::unique_ptr<std::string> shaved_tile{};
 
     /******* ZOOMS *******/
@@ -52,197 +48,8 @@ struct QueryData {
     bool compress = false;
 
     /******* FILTER  *******/
-    Filters* filters_obj{};
+    Filters* filters_obj = nullptr;
 };
-
-
-struct Shaver : Napi::AsyncWorker {
-    using Base = Napi::AsyncWorker;
-
-    Shaver(std::unique_ptr<QueryData> &&  query_data, Napi::Function & callback)
-        : Base(callback),
-          query_data_(std::move(query_data)) {}
-
-    void Execute() override {
-        std::cerr << "Execute() "<< std::endl;
-        SetError("FAIL");
-    }
-    void OnOK() override {
-        Napi::HandleScope scope(Env());
-        Callback().Call({Env().Null(), Env().Null()});
-    }
-private:
-    std::unique_ptr<QueryData> query_data_;
-};
-
-
-/**
- * Shave off unneeded layers and features, asynchronously
- *
- * @name shave
- * @param {Buffer} buffer - Vector Tile PBF
- * @param {Object} [options={}]
- * @param {Number} [options.zoom]
- * @param {Number} [options.maxzoom]
- * @param {Object} [options.compress]
- * @param {String} options.compress.type output a compressed shaved ['none'|'gzip']
- * @param {Function} callback - from whence the shaven vector tile comes
- * @example
- * var shaver = require('@mapbox/vtshaver');
- * var fs = require('fs');
- * var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
- * var style = require('/path/to/style.json');
- * var filters = new shaver.Filters(shaver.styleToFilters(style));
- *
- * var options = {
- *     filters: filters,  // required
- *     zoom: 14,          // required
- *     maxzoom: 16,       // optional
- *     compress: {        // optional
- *         type: 'none'
- *     }
- * };
- *
- * shaver.shave(buffer, options, function(err, shavedTile) {
- *     if (err) throw err;
- *     console.log(shavedTile); // => vector tile buffer
- * });
- */
-Napi::Value shave(Napi::CallbackInfo const& info) {
-    // CALLBACK: ensure callback is a function
-    std::size_t length = info.Length();
-    if (length == 0) {
-        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
-        return info.Env().Null();
-    }
-    Napi::Value callback_val = info[info.Length() - 1];
-    if (!callback_val.IsFunction()) {
-        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
-        return info.Env().Null();
-    }
-
-    Napi::Function callback = callback_val.As<Napi::Function>();
-
-    // BUFFER: check first argument, should be a pbf object
-
-    if (!info[0].IsBuffer()) {
-        return CallbackError("first arg 'buffer' must be a Protobuf buffer object", info);
-    }
-    auto buffer = info[0].As<Napi::Buffer<char>>();//buffer_val->ToObject();
-
-    // OPTIONS: check second argument, should be an 'options' object
-    Napi::Value options_val = info[1];
-    if (!options_val.IsObject()) {
-        return CallbackError("second arg 'options' must be an object", info);
-    }
-    auto options = options_val.As<Napi::Object>();
-
-    // check zoom, should be a number
-    std::uint32_t zoom = 0;
-    if (options.Has("zoom")) {
-        Napi::Value zoom_val = options.Get("zoom");
-        if (!zoom_val.IsNumber()) {
-            return CallbackError("option 'zoom' must be a positive integer", info);
-        }
-        zoom = zoom_val.As<Napi::Number>();
-    }
-
-    //zoom = zoom_val.As<Napi::Number>().Uint32Value();
-
-    // check maxzoom, should be a number
-    mbgl::optional<std::uint32_t> maxzoom;
-    if (options.Has("maxzoom")) {
-        // Validate optional "maxzoom" value
-        Napi::Value maxzoom_val = options.Get("maxzoom");
-        if (!maxzoom_val.IsNumber()) {
-            return CallbackError("option 'maxzoom' must be a positive integer.", info);
-        }
-        maxzoom = maxzoom_val.As<Napi::Number>().Uint32Value();
-    }
-
-    // validate compress (OPTIONAL)
-    bool compress = false;
-    if (options.Has("compress")) {
-        Napi::Value compress_options_val = options.Get("compress");
-        Napi::Object compress_options = compress_options_val.As<Napi::Object>();
-
-        // compress.type is REQUIRED
-        if (!compress_options.Has("type")) {
-            return CallbackError("compress option 'type' not provided. Please provide "
-                                 "a compression type if using the compress option", info);
-        }
-
-        Napi::Value compress_type = compress_options.Get("type");
-        if (!compress_type.IsString()) {
-            return CallbackError("compress option 'type' must be a string", info);
-        }
-
-        // Convert from v8 Object to std::string so we can check compress type value
-        std::string str = compress_type.As<Napi::String>();
-        // compress.type can only be 'none' and 'gzip' for now
-        if (str != "none" && str != "gzip") {
-            return CallbackError("compress type must equal 'none' or 'gzip'", info);
-        }
-        if (str == "gzip") {
-            compress = true;
-        }
-
-        // compress.level is OPTIONAL
-        if (compress_options.Has("level")) {
-            Napi::Value compress_level = compress_options.Get("level");
-            if (!compress_level.IsNumber()) {
-                return CallbackError("compress option 'level' must be an unsigned integer", info);
-            }
-        }
-    }
-
-    // `filters` comes in as a shaver.Filters object
-    if (options.Has("filters")) {
-        Napi::Value filters_val = options.Get("filters");
-        // options.filters will now be an Object
-        if (filters_val.IsNull() ||
-            filters_val.IsUndefined() ||
-            !filters_val.IsObject()) {
-            return CallbackError(
-                "option 'filters' must be a shaver.Filters object",
-                info);
-        }
-
-        Napi::Object filters_object = filters_val.As<Napi::Object>();
-
-        // This is the same as calling InstanceOf() in JS-world
-        // [ /Nan::New\((\w+)\)->HasInstance\((\w+)\)/g, '$2.InstanceOf($1.Value())' ]
-        if (!filters_object.InstanceOf(Filters::constructor.Value())) {
-            return CallbackError(
-                "option 'filters' must be a shaver.Filters object",
-                info);
-        }
-
-        // set up the query_data to pass into our threadpool
-        auto query_data = std::make_unique<QueryData>(); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
-        //query_data->request.data = baton;
-        query_data->data = buffer.As<Napi::Buffer<char>>().Data();
-        query_data->dataLength = buffer.As<Napi::Buffer<char>>().Length();
-        query_data->shaved_tile = std::make_unique<std::string>();
-        // we convert to float here since comparison is against
-        // floating point value as styles support fractional zooms
-        query_data->zoom = static_cast<float>(zoom);
-        query_data->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : mbgl::optional<float>();
-        query_data->compress = compress;
-        // TODO(alliecrevier): pass compress_type and compress_level once we add support for more than gzip with default level: https://github.com/mapbox/gzip-hpp/blob/832d6262cecaa3b85c3c242e3617b4cfdbf3de23/include/gzip/compress.hpp#L19
-        //query_data->filters_obj = filters_object;//.Unwrap<Filters>(); // "Unwrap" takes the Javascript object and gives us the C++ object (gets rid of JS wrapper)
-        //query_data->filters_obj->_ref();                                            // This is saying "I'm in use, don't garbage collect me"
-        //query_data->buffer.Reset(buffer.As<Napi::Object>());
-        //query_data->cb.Reset(callback);
-        //uv_queue_work(uv_default_loop(), &baton->request, AsyncShave, reinterpret_cast<uv_after_work_cb>(AfterShave));
-
-        auto* worker = new Shaver{std::move(query_data), callback};
-        worker->Queue();
-        return info.Env().Undefined();
-    } else {
-        return CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", info);
-    }
-}
 
 // We use a std::vector here over std::map and std::unordered_map
 // because benchmarking showed that it is faster to create many of them
@@ -401,111 +208,254 @@ void filterFeatures(vtzero::tile_builder* finalvt,
     });
 }
 
+struct Shaver : Napi::AsyncWorker {
+    using Base = Napi::AsyncWorker;
 
-// This is where we actually shave
-/*
-void AsyncShave(uv_work_t* req) {
-    auto* baton = static_cast<AsyncBaton*>(req->data);    // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
-    vtzero::data_view dv{baton->data, baton->dataLength}; // Read input data
-    std::string uncompressed;
+    Shaver(std::unique_ptr<QueryData>&& query_data, Napi::Function& callback)
+        : Base(callback),
+          query_data_(std::move(query_data)) {}
 
-    try {
+    void Execute() override {
+        vtzero::data_view dv{query_data_->data, query_data_->dataLength}; // Read input data
+        std::string uncompressed;
+        try {
 
-        if (gzip::is_compressed(baton->data, baton->dataLength)) {
-            // Decompress tile before reading data
-            gzip::Decompressor decompressor;
-            decompressor.decompress(uncompressed, baton->data, baton->dataLength);
-            dv = vtzero::data_view(uncompressed);
-        }
-
-        vtzero::vector_tile vt{dv}; // Needed for reading the tile
-        vtzero::tile_builder finalvt;
-
-        auto const& active_filters = baton->filters_obj->get_filters();
-        while (auto layer = vt.next_layer()) {
-            // Check if layer is empty (TODO: or invalid)
-            if (layer.empty()) {
-                continue;
+            if (gzip::is_compressed(query_data_->data, query_data_->dataLength)) {
+                // Decompress tile before reading data
+                gzip::Decompressor decompressor;
+                decompressor.decompress(uncompressed, query_data_->data, query_data_->dataLength);
+                dv = vtzero::data_view(uncompressed);
             }
 
-            // Using https://github.com/mapbox/protozero/blob/master/include/protozero/data_view.hpp#L129 to convert data_view to string
-            auto filter_itr = active_filters.find(std::string{layer.name()}); // TODO(carol): Convert filter_key_type to data_view, in src/filters.hpp
+            vtzero::vector_tile vt{dv}; // Needed for reading the tile
+            vtzero::tile_builder finalvt;
 
-            // If the filter is found for this layer name, continue to filter features within this layer
-            if (filter_itr != active_filters.end()) {
-                auto const& filter = filter_itr->second;
+            auto const& active_filters = query_data_->filters_obj->get_filters();
+            while (auto layer = vt.next_layer()) {
+                // Check if layer is empty (TODO: or invalid)
+                if (layer.empty()) {
+                    continue;
+                }
 
-                // get info from tuple
-                auto const& mbgl_filter_obj = std::get<0>(filter);
-                auto const& property_filter = std::get<1>(filter);
-                auto const minzoom = std::get<2>(filter);
-                auto const maxzoom = std::get<3>(filter);
+                // Using https://github.com/mapbox/protozero/blob/master/include/protozero/data_view.hpp#L129 to convert data_view to string
+                auto filter_itr = active_filters.find(std::string{layer.name()}); // TODO(carol): Convert filter_key_type to data_view, in src/filters.hpp
 
-                // If zoom level is relevant to filter
-                // OR if the style layer minzoom is styling overzoomed tiles...
-                // continue filtering. Else, no need to keep the layer.
-                if ((baton->zoom >= minzoom && baton->zoom <= maxzoom) ||
-                    (baton->maxzoom && *(baton->maxzoom) < minzoom)) {
+                // If the filter is found for this layer name, continue to filter features within this layer
+                if (filter_itr != active_filters.end()) {
+                    auto const& filter = filter_itr->second;
 
-                    // Skip feature re-encoding when filter is null/empty AND we have no property k/v filter
-                    if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
-                        finalvt.add_existing_layer(layer); // Add to new tile
-                    } else {
-                        // Ampersand in front of var: "Pass as pointers"
-                        filterFeatures(&finalvt, baton->zoom, layer, mbgl_filter_obj, property_filter);
+                    // get info from tuple
+                    auto const& mbgl_filter_obj = std::get<0>(filter);
+                    auto const& property_filter = std::get<1>(filter);
+                    auto const minzoom = std::get<2>(filter);
+                    auto const maxzoom = std::get<3>(filter);
+
+                    // If zoom level is relevant to filter
+                    // OR if the style layer minzoom is styling overzoomed tiles...
+                    // continue filtering. Else, no need to keep the layer.
+                    if ((query_data_->zoom >= minzoom && query_data_->zoom <= maxzoom) ||
+                        (query_data_->maxzoom && *(query_data_->maxzoom) < minzoom)) {
+
+                        // Skip feature re-encoding when filter is null/empty AND we have no property k/v filter
+                        if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
+                            finalvt.add_existing_layer(layer); // Add to new tile
+                        } else {
+                            // Ampersand in front of var: "Pass as pointers"
+                            filterFeatures(&finalvt, query_data_->zoom, layer, mbgl_filter_obj, property_filter);
+                        }
                     }
                 }
+            } // finished iterating through layers
+
+            if (query_data_->compress) {
+                // Compress final tile before sending back
+                std::string final_data;
+                finalvt.serialize(final_data);
+                gzip::Compressor compressor;
+                compressor.compress(*query_data_->shaved_tile, final_data.data(), final_data.size());
+            } else {
+                finalvt.serialize(*query_data_->shaved_tile);
             }
-        } // finished iterating through layers
-
-        if (baton->compress) {
-            // Compress final tile before sending back
-            std::string final_data;
-            finalvt.serialize(final_data);
-            gzip::Compressor compressor;
-            compressor.compress(*baton->shaved_tile, final_data.data(), final_data.size());
-        } else {
-            finalvt.serialize(*baton->shaved_tile);
+        } catch (std::exception const& ex) {
+            SetError(ex.what());
         }
-    } catch (std::exception const& ex) {
-        // TODO(carol): Since the majority of code in this method is wrapped in a try/catch,
-        // we could chain caught exceptions here to individually identify and return specific
-        // error messages based on exception type. For example: "protozero::exception" per
-        // https://github.com/mapbox/protozero/blob/master/include/protozero/exception.hpp#L30
-        baton->error_name = ex.what();
     }
-} // end AsyncShave()
-*/
-// handle results from AsyncShave - if there are errors return those
-// otherwise return the type & info to our callback
-/*
-void AfterShave(uv_work_t* req) {
-    Napi::HandleScope scope(env);
-    auto* baton = static_cast<AsyncBaton*>(req->data); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
-
-    if (!baton->error_name.empty()) {
-        Napi::Value argv[1] = {Napi::Error::New(env, baton->error_name.c_str())};
-        Napi::New(env, baton->cb).MakeCallback(Napi::GetCurrentContext()->Global(), 1, static_cast<Napi::Value*>(argv));
-    } else // no errors, lets return data
-    {
+    void OnOK() override {
+        Napi::HandleScope scope(Env());
         // create buffer from std string
-        std::string& shaved_tile_buffer = *baton->shaved_tile;
-        Napi::Value argv[2] = {env.Null(),
-                                        Napi::Buffer<char>::New(env,
-                                            &shaved_tile_buffer[0],
-                                            shaved_tile_buffer.size(),
-                                            [](char*, void* hint) {
-                                                delete reinterpret_cast<std::string*>(hint);
-                                            },
-                                            baton->shaved_tile.release())
-                                            };
-        Napi::New(env, baton->cb).MakeCallback(Napi::GetCurrentContext()->Global(), 2, static_cast<Napi::Value*>(argv));
+        std::string& shaved_tile_buffer = *query_data_->shaved_tile;
+        Napi::Value argv = Napi::Buffer<char>::New(
+            Env(),
+            &shaved_tile_buffer[0],
+            shaved_tile_buffer.size(),
+            [](Napi::Env /*unused*/, char* /*unused*/, std::string* str_ptr) {
+                delete str_ptr;
+            },
+            query_data_->shaved_tile.release());
+        Callback().Call({Env().Null(), argv});
     }
 
-    // Release, mark as garbage collectible
-    baton->cb.Reset();
-    baton->buffer.Reset();
-    baton->filters_obj->_unref();
-    delete baton; // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
+  private:
+    std::unique_ptr<QueryData> query_data_;
+};
+
+/**
+ * Shave off unneeded layers and features, asynchronously
+ *
+ * @name shave
+ * @param {Buffer} buffer - Vector Tile PBF
+ * @param {Object} [options={}]
+ * @param {Number} [options.zoom]
+ * @param {Number} [options.maxzoom]
+ * @param {Object} [options.compress]
+ * @param {String} options.compress.type output a compressed shaved ['none'|'gzip']
+ * @param {Function} callback - from whence the shaven vector tile comes
+ * @example
+ * var shaver = require('@mapbox/vtshaver');
+ * var fs = require('fs');
+ * var buffer = fs.readFileSync('/path/to/vector-tile.mvt');
+ * var style = require('/path/to/style.json');
+ * var filters = new shaver.Filters(shaver.styleToFilters(style));
+ *
+ * var options = {
+ *     filters: filters,  // required
+ *     zoom: 14,          // required
+ *     maxzoom: 16,       // optional
+ *     compress: {        // optional
+ *         type: 'none'
+ *     }
+ * };
+ *
+ * shaver.shave(buffer, options, function(err, shavedTile) {
+ *     if (err) throw err;
+ *     console.log(shavedTile); // => vector tile buffer
+ * });
+ */
+Napi::Value shave(Napi::CallbackInfo const& info) {
+    // CALLBACK: ensure callback is a function
+    std::size_t length = info.Length();
+    if (length == 0) {
+        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
+        return info.Env().Null();
+    }
+    Napi::Value callback_val = info[info.Length() - 1];
+    if (!callback_val.IsFunction()) {
+        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
+        return info.Env().Null();
+    }
+
+    Napi::Function callback = callback_val.As<Napi::Function>();
+
+    // BUFFER: check first argument, should be a pbf object
+
+    if (!info[0].IsBuffer()) {
+        return CallbackError("first arg 'buffer' must be a Protobuf buffer object", info);
+    }
+    auto buffer = info[0].As<Napi::Buffer<char>>(); //buffer_val->ToObject();
+
+    // OPTIONS: check second argument, should be an 'options' object
+    Napi::Value options_val = info[1];
+    if (!options_val.IsObject()) {
+        return CallbackError("second arg 'options' must be an object", info);
+    }
+    auto options = options_val.As<Napi::Object>();
+
+    // check zoom, should be a number
+    std::uint32_t zoom = 0;
+    if (!options.Has("zoom")) {
+        return CallbackError("option 'zoom' not provided. Please provide a zoom level for this tile.", info);
+    }
+    Napi::Value zoom_val = options.Get("zoom");
+    if (!zoom_val.IsNumber() || zoom_val.As<Napi::Number>().DoubleValue() < 0) {
+        return CallbackError("option 'zoom' must be a positive integer.", info);
+    }
+    zoom = zoom_val.As<Napi::Number>();
+
+    // check maxzoom, should be a number
+    mbgl::optional<std::uint32_t> maxzoom;
+    if (options.Has("maxzoom")) {
+        // Validate optional "maxzoom" value
+        Napi::Value maxzoom_val = options.Get("maxzoom");
+        if (!maxzoom_val.IsNumber() || maxzoom_val.As<Napi::Number>().DoubleValue() < 0) {
+            return CallbackError("option 'maxzoom' must be a positive integer.", info);
+        }
+        maxzoom = maxzoom_val.As<Napi::Number>().Uint32Value();
+    }
+
+    // validate compress (OPTIONAL)
+    bool compress = false;
+    if (options.Has("compress")) {
+        Napi::Value compress_options_val = options.Get("compress");
+        Napi::Object compress_options = compress_options_val.As<Napi::Object>();
+
+        // compress.type is REQUIRED
+        if (!compress_options.Has("type")) {
+            return CallbackError("compress option 'type' not provided. Please provide "
+                                 "a compression type if using the compress option",
+                                 info);
+        }
+
+        Napi::Value compress_type = compress_options.Get("type");
+        if (!compress_type.IsString()) {
+            return CallbackError("compress option 'type' must be a string", info);
+        }
+
+        std::string str = compress_type.As<Napi::String>();
+        // compress.type can only be 'none' and 'gzip' for now
+        if (str != "none" && str != "gzip") {
+            return CallbackError("compress type must equal 'none' or 'gzip'", info);
+        }
+        if (str == "gzip") {
+            compress = true;
+        }
+
+        // compress.level is OPTIONAL ------ FIXME FAIL!
+        if (compress_options.Has("level")) {
+            Napi::Value compress_level = compress_options.Get("level");
+            if (!compress_level.IsNumber() || compress_level.As<Napi::Number>().Int32Value() < 0) {
+                return CallbackError("compress option 'level' must be an unsigned integer", info);
+            }
+        }
+    }
+
+    // `filters` comes in as a shaver.Filters object
+    if (options.Has("filters")) {
+        Napi::Value filters_val = options.Get("filters");
+        // options.filters will now be an Object
+        if (filters_val.IsNull() ||
+            filters_val.IsUndefined() ||
+            !filters_val.IsObject()) {
+            return CallbackError(
+                "option 'filters' must be a shaver.Filters object",
+                info);
+        }
+
+        Napi::Object filters_object = filters_val.As<Napi::Object>();
+
+        // This is the same as calling InstanceOf() in JS-world
+        // [ /Nan::New\((\w+)\)->HasInstance\((\w+)\)/g, '$2.InstanceOf($1.Value())' ]
+        if (!filters_object.InstanceOf(Filters::constructor.Value())) {
+            return CallbackError(
+                "option 'filters' must be a shaver.Filters object",
+                info);
+        }
+
+        // set up the query_data to pass into our threadpool
+        auto query_data = std::make_unique<QueryData>(); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
+        //query_data->request.data = baton;
+        query_data->data = buffer.As<Napi::Buffer<char>>().Data();
+        query_data->dataLength = buffer.As<Napi::Buffer<char>>().Length();
+        query_data->shaved_tile = std::make_unique<std::string>();
+        // we convert to float here since comparison is against
+        // floating point value as styles support fractional zooms
+        query_data->zoom = static_cast<float>(zoom);
+        query_data->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : mbgl::optional<float>();
+        query_data->compress = compress;
+        query_data->filters_obj = Napi::ObjectWrap<Filters>::Unwrap(filters_object);
+        auto* worker = new Shaver{std::move(query_data), callback};
+        worker->Queue();
+        return info.Env().Undefined();
+    }         return CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", info);
+
+
 }
-*/

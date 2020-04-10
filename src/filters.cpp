@@ -1,18 +1,12 @@
 #include "filters.hpp"
-
 #include <exception>
 #include <map>
-// This header must come before `mgbl` headers
-// So we ask clang-format not to re-order
-// clang-format off
-//#include <node/src/node_conversion.hpp>
-// clang-format on
 #include <mbgl/style/conversion.hpp>
 #include <mbgl/style/conversion/filter.hpp>
+#include <mbgl/style/conversion/json.hpp>
 #include <mbgl/style/filter.hpp>
 #include <string>
 #include <utility>
-#include <iostream>
 
 Napi::FunctionReference Filters::constructor;
 
@@ -40,8 +34,6 @@ Napi::Object Filters::Initialize(Napi::Env env, Napi::Object exports) {
 
 Filters::Filters(Napi::CallbackInfo const& info)
     : Napi::ObjectWrap<Filters>(info) {
-
-    std::cerr << "Filters ctor called" << std::endl;
     if (!info.IsConstructCall()) {
         Napi::TypeError::New(Env(), "Cannot call constructor as function, you need to use 'new' keyword");
         return;
@@ -87,7 +79,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                         }
                         minzoom = minzoom_val.As<Napi::Number>().DoubleValue();
                     } else {
-                        Napi::Error::New(Env(), "Filter must incstatic Napi::FunctionReference constructor;lude a minzoom property.").ThrowAsJavaScriptException();
+                        Napi::Error::New(Env(), "Filter must include a minzoom property.").ThrowAsJavaScriptException();
                         return;
                     }
                     if (layer.Has("maxzoom")) {
@@ -117,11 +109,14 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     // Ex: { water: true }
                     // Because of this, we check for if the filter is an array or a boolean before converting to a mbgl Filter
                     // If a boolean and is true, create a null/empty Filter object.
+                    Napi::Object json = Env().Global().Get("JSON").As<Napi::Object>();
+                    Napi::Function stringify = json.Get("stringify").As<Napi::Function>();
+
                     if (layer_filter.IsArray()) {
                         mbgl::style::conversion::Error filterError;
-                        std::string converted_mbgl_optional_style_filter {"FAIL"};//= mbgl::style::conversion::Converter<mbgl::style::Filter>()(layer_filter, filterError);
-
-                        if (converted_mbgl_optional_style_filter.empty()) {
+                        std::string filter_str = stringify.Call(json, {layer_filter}).As<Napi::String>();
+                        auto optional_filter = mbgl::style::conversion::convertJSON<mbgl::style::Filter>(filter_str, filterError);
+                        if (!optional_filter) {
                             if (filterError.message == "filter property must be a string") {
                                 Napi::TypeError::New(Env(), "Unable to create Filter object, ensure all filters are expression-based").ThrowAsJavaScriptException();
 
@@ -130,7 +125,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                             }
                             return;
                         }
-                        filter = mbgl::style::Filter{};//converted_mbgl_optional_style_filter; // FIXME
+                        filter = *optional_filter;
                     } else if (layer_filter.IsBoolean() && layer_filter.As<Napi::Boolean>()) {
                         filter = mbgl::style::Filter{};
                     } else {
@@ -153,7 +148,6 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     filter_properties_type property;
                     if (layer_properties.IsArray()) {
                         auto propertyArray = layer_properties.As<Napi::Array>();
-                        //v8::Handle<v8::Array> propertyArray = layer_properties.As<v8::Handle<v8::Array>>();
                         std::uint32_t propertiesLength = propertyArray.Length();
                         std::vector<std::string> values;
                         values.reserve(propertiesLength);
@@ -173,12 +167,11 @@ Filters::Filters(Napi::CallbackInfo const& info)
                         Napi::TypeError::New(Env(), "invalid filter value, must be an array or a boolean").ThrowAsJavaScriptException();
                         return;
                     }
-                    std::string source_layer = layer_key.As<Napi::String>().Utf8Value();
+                    std::string source_layer = layer_key.ToString();
                     add_filter(std::move(source_layer), std::move(filter), std::move(property), minzoom, maxzoom);
                 }
             }
-        }
-        catch (std::exception const& ex) {
+        } catch (std::exception const& ex) {
             Napi::TypeError::New(Env(), ex.what()).ThrowAsJavaScriptException();
         }
     }
