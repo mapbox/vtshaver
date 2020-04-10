@@ -455,7 +455,6 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
         auto* worker = new Shaver{std::move(query_data), callback};
         worker->Queue();
         return info.Env().Undefined();
-    }         return CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", info);
-
-
+    }
+    return CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", info);
 }
