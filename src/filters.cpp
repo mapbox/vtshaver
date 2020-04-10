@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-Napi::FunctionReference Filters::constructor;
+Napi::FunctionReference Filters::constructor; // NOLINT
 
 Napi::Object Filters::Initialize(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "Filters",
