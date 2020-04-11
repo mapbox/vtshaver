@@ -72,14 +72,16 @@ test('simple style layers', function(t) {
     ]
   }), {
     water: {
-      filters: ['any', ['!=', 'color', 'blue'],
-        ['==', 'color', 'blue']
+      filters: [
+        'any',
+        ['all', ['!=', 'color', 'blue'], ['>=', ['zoom'], 10], ['<=', ['zoom'], 15]],
+        ['all', ['==', 'color', 'blue'], ['>=', ['zoom'], 8], ['<=', ['zoom'], 16]]
       ],
       minzoom: 8,
       maxzoom: 16,
       properties: ['color']
     }
-  }, 'returns water:filter for multiple water filters, and updates min/max zoom for smallest/largest values');
+  }, 'returns water:filter for multiple water filters, and updates min/max zoom for smallest/largest values, and adds min max zoom filter for each filter');
 
   t.deepEqual(styleToFilter({
     layers: [{
@@ -95,7 +97,8 @@ test('simple style layers', function(t) {
     ]
   }), {
     water: {
-      filters: ['any', ['!=', 'color', 'blue'],
+      filters: ['any',
+        ['all', ['!=', 'color', 'blue'], ['>=', ['zoom'], 10], ['<=', ['zoom'], 15]],
         ['==', 'color', 'blue']
       ],
       minzoom: 0,
