@@ -18,6 +18,7 @@ if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
       var args = [vtshave_cli, '--tile', tile, '--style', styleWithoutLegacyExpressions, '--zoom', 16];
       const child = spawn(process.execPath, args);
 
+      // collect logs to show in case of error
       var logs = '';
 
       child.stdout.setEncoding('utf8');
@@ -32,8 +33,7 @@ if (process.env.TOOLSET && process.env.TOOLSET === 'asan') {
       child
           .on('error', function(err) { t.ifError(err, 'no error'); })
           .on('close', function(code) {
-              console.log(logs);
-              t.equal(code, 0, 'exit 0');
+              t.equal(code, 0, 'exit 0 - logs: '+logs);
               t.end();
           });
     });
