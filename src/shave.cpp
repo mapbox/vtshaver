@@ -30,22 +30,14 @@ inline Napi::Value CallbackError(std::string const& message, Napi::CallbackInfo 
 }
 
 struct QueryData {
-
-    //query_data->data = buffer.As<Napi::Buffer<char>>().Data();
-    //   query_data->dataLength = buffer.As<Napi::Buffer<char>>().Length();
-    //query_data->shaved_tile = std::make_unique<std::string>();
-    //   query_data->zoom = static_cast<float>(zoom);
-    //   query_data->maxzoom = maxzoom;
-    //   query_data->compress = compress;
-    //   query_data->filters_obj = Napi::ObjectWrap<Filters>::Unwrap(filters_object);
-    QueryData(Napi::Buffer<char> const& buffer, float zoom_, mbgl::optional<float> const& maxzoom_, bool compress_, Filters* filters)
+    QueryData(Napi::Buffer<char> const& buffer, float zoom, mbgl::optional<float> maxzoom, bool compress, Filters* filters)
         : buffer_ref{Napi::Persistent(buffer)},
-          data{buffer.Data()},
-          dataLength{buffer.Length()},
-          zoom{zoom_},
-          maxzoom{maxzoom_},
-          compress{compress_},
-          filters_obj{filters} {}
+          data_{buffer.Data()},
+          dataLength_{buffer.Length()},
+          zoom_{zoom},
+          maxzoom_{std::move(maxzoom)},
+          compress_{compress},
+          filters_{filters} {}
 
     // non-copyable
     QueryData(QueryData const&) = delete;
@@ -60,14 +52,35 @@ struct QueryData {
         } catch (...) {
         }
     }
+
+    const char* data() const {
+        return data_;
+    }
+    std::size_t dataLength() const {
+        return dataLength_;
+    }
+    float zoom() const {
+        return zoom_;
+    }
+    mbgl::optional<float> maxzoom() const {
+        return maxzoom_;
+    }
+    bool compress() const {
+        return compress_;
+    }
+    Filters* filters() {
+        return filters_;
+        ;
+    }
+
+  private:
     Napi::Reference<Napi::Buffer<char>> buffer_ref;
-    char const* data;
-    std::size_t dataLength;
-    std::unique_ptr<std::string> shaved_tile = std::make_unique<std::string>();
-    float zoom;
-    mbgl::optional<float> maxzoom;
-    bool compress;
-    Filters* filters_obj;
+    char const* data_;
+    std::size_t dataLength_;
+    float zoom_;
+    mbgl::optional<float> maxzoom_;
+    bool compress_;
+    Filters* filters_;
 };
 
 // We use a std::vector here over std::map and std::unordered_map
@@ -230,24 +243,25 @@ struct Shaver : Napi::AsyncWorker {
 
     Shaver(std::unique_ptr<QueryData>&& query_data, Napi::Function const& callback)
         : Base(callback),
-          query_data_(std::move(query_data)) {}
+          query_data_(std::move(query_data)),
+          shaved_tile_(std::make_unique<std::string>()) {}
 
     void Execute() override {
-        vtzero::data_view dv{query_data_->data, query_data_->dataLength}; // Read input data
+        vtzero::data_view dv{query_data_->data(), query_data_->dataLength()}; // Read input data
         std::string uncompressed;
         try {
 
-            if (gzip::is_compressed(query_data_->data, query_data_->dataLength)) {
+            if (gzip::is_compressed(query_data_->data(), query_data_->dataLength())) {
                 // Decompress tile before reading data
                 gzip::Decompressor decompressor;
-                decompressor.decompress(uncompressed, query_data_->data, query_data_->dataLength);
+                decompressor.decompress(uncompressed, query_data_->data(), query_data_->dataLength());
                 dv = vtzero::data_view(uncompressed);
             }
 
             vtzero::vector_tile vt{dv}; // Needed for reading the tile
             vtzero::tile_builder finalvt;
 
-            auto const& active_filters = query_data_->filters_obj->get_filters();
+            auto const& active_filters = query_data_->filters()->get_filters();
             while (auto layer = vt.next_layer()) {
                 // Check if layer is empty (TODO: or invalid)
                 if (layer.empty()) {
@@ -270,28 +284,28 @@ struct Shaver : Napi::AsyncWorker {
                     // If zoom level is relevant to filter
                     // OR if the style layer minzoom is styling overzoomed tiles...
                     // continue filtering. Else, no need to keep the layer.
-                    if ((query_data_->zoom >= minzoom && query_data_->zoom <= maxzoom) ||
-                        (query_data_->maxzoom && *(query_data_->maxzoom) < minzoom)) {
+                    if ((query_data_->zoom() >= minzoom && query_data_->zoom() <= maxzoom) ||
+                        (query_data_->maxzoom() && *query_data_->maxzoom() < minzoom)) {
 
                         // Skip feature re-encoding when filter is null/empty AND we have no property k/v filter
                         if (std::get<0>(filter) == mbgl::style::Filter() && property_filter.first == Filters::filter_properties_types::all) {
                             finalvt.add_existing_layer(layer); // Add to new tile
                         } else {
                             // Ampersand in front of var: "Pass as pointers"
-                            filterFeatures(&finalvt, query_data_->zoom, layer, mbgl_filter_obj, property_filter);
+                            filterFeatures(&finalvt, query_data_->zoom(), layer, mbgl_filter_obj, property_filter);
                         }
                     }
                 }
             } // finished iterating through layers
 
-            if (query_data_->compress) {
+            if (query_data_->compress()) {
                 // Compress final tile before sending back
                 std::string final_data;
                 finalvt.serialize(final_data);
                 gzip::Compressor compressor;
-                compressor.compress(*query_data_->shaved_tile, final_data.data(), final_data.size());
+                compressor.compress(*shaved_tile_, final_data.data(), final_data.size());
             } else {
-                finalvt.serialize(*query_data_->shaved_tile);
+                finalvt.serialize(*shaved_tile_);
             }
         } catch (std::exception const& ex) {
             SetError(ex.what());
@@ -300,7 +314,7 @@ struct Shaver : Napi::AsyncWorker {
     void OnOK() override {
         Napi::HandleScope scope(Env());
         // create buffer from std string
-        std::string& shaved_tile_buffer = *query_data_->shaved_tile;
+        std::string& shaved_tile_buffer = *shaved_tile_;
         auto buffer = Napi::Buffer<char>::New(
             Env(),
             &shaved_tile_buffer[0],
@@ -308,12 +322,13 @@ struct Shaver : Napi::AsyncWorker {
             [](Napi::Env /*unused*/, char* /*unused*/, std::string* str_ptr) {
                 delete str_ptr;
             },
-            query_data_->shaved_tile.release());
+            shaved_tile_.release());
         Callback().Call({Env().Null(), buffer});
     }
 
   private:
     std::unique_ptr<QueryData> query_data_;
+    std::unique_ptr<std::string> shaved_tile_;
 };
 
 /**
