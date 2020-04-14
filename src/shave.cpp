@@ -39,20 +39,6 @@ struct QueryData {
           compress_{compress},
           filters_{filters} {}
 
-    // non-copyable
-    QueryData(QueryData const&) = delete;
-    QueryData& operator=(QueryData const&) = delete;
-    // non-movable
-    QueryData(QueryData&&) = delete;
-    QueryData& operator=(QueryData&&) = delete;
-
-    ~QueryData() {
-        try {
-            buffer_ref.Reset();
-        } catch (...) {
-        }
-    }
-
     const char* data() const {
         return data_;
     }
@@ -70,7 +56,6 @@ struct QueryData {
     }
     Filters* filters() {
         return filters_;
-        ;
     }
 
   private:
