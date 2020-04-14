@@ -30,14 +30,44 @@ inline Napi::Value CallbackError(std::string const& message, Napi::CallbackInfo 
 }
 
 struct QueryData {
-    Napi::Reference<Napi::Buffer<char>> buffer{}; // Persistent: hey v8, dont destroy this
-    const char* data{};
-    std::size_t dataLength{};
-    std::unique_ptr<std::string> shaved_tile{};
-    float zoom{};
-    mbgl::optional<float> maxzoom{};
-    bool compress = false;
-    Filters* filters_obj = nullptr;
+
+    //query_data->data = buffer.As<Napi::Buffer<char>>().Data();
+    //   query_data->dataLength = buffer.As<Napi::Buffer<char>>().Length();
+    //query_data->shaved_tile = std::make_unique<std::string>();
+    //   query_data->zoom = static_cast<float>(zoom);
+    //   query_data->maxzoom = maxzoom;
+    //   query_data->compress = compress;
+    //   query_data->filters_obj = Napi::ObjectWrap<Filters>::Unwrap(filters_object);
+    QueryData(Napi::Buffer<char> const& buffer, float zoom_, mbgl::optional<float> const& maxzoom_, bool compress_, Filters* filters)
+        : buffer_ref{Napi::Persistent(buffer)},
+          data{buffer.Data()},
+          dataLength{buffer.Length()},
+          zoom{zoom_},
+          maxzoom{maxzoom_},
+          compress{compress_},
+          filters_obj{filters} {}
+
+    // non-copyable
+    QueryData(QueryData const&) = delete;
+    QueryData& operator=(QueryData const&) = delete;
+    // non-movable
+    QueryData(QueryData&&) = delete;
+    QueryData& operator=(QueryData&&) = delete;
+
+    ~QueryData() {
+        try {
+            buffer_ref.Reset();
+        } catch (...) {
+        }
+    }
+    Napi::Reference<Napi::Buffer<char>> buffer_ref;
+    char const* data;
+    std::size_t dataLength;
+    std::unique_ptr<std::string> shaved_tile = std::make_unique<std::string>();
+    float zoom;
+    mbgl::optional<float> maxzoom;
+    bool compress;
+    Filters* filters_obj;
 };
 
 // We use a std::vector here over std::map and std::unordered_map
@@ -338,7 +368,7 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
     if (!info[0].IsBuffer()) {
         return CallbackError("first arg 'buffer' must be a Protobuf buffer object", info);
     }
-    auto buffer = info[0].As<Napi::Buffer<char>>(); //buffer_val->ToObject();
+    auto buffer = info[0].As<Napi::Buffer<char>>();
 
     // OPTIONS: check second argument, should be an 'options' object
     Napi::Value options_val = info[1];
@@ -428,17 +458,7 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
         }
 
         // set up the query_data to pass into our threadpool
-        auto query_data = std::make_unique<QueryData>(); // NOLINT since we're in the process of refactoring to remove AsyncBaton and use Napi::AysncWorker
-        //query_data->request.data = baton;
-        query_data->data = buffer.As<Napi::Buffer<char>>().Data();
-        query_data->dataLength = buffer.As<Napi::Buffer<char>>().Length();
-        query_data->shaved_tile = std::make_unique<std::string>();
-        // we convert to float here since comparison is against
-        // floating point value as styles support fractional zooms
-        query_data->zoom = static_cast<float>(zoom);
-        query_data->maxzoom = maxzoom;
-        query_data->compress = compress;
-        query_data->filters_obj = Napi::ObjectWrap<Filters>::Unwrap(filters_object);
+        auto query_data = std::make_unique<QueryData>(buffer, zoom, maxzoom, compress, Napi::ObjectWrap<Filters>::Unwrap(filters_object));
         auto* worker = new Shaver{std::move(query_data), callback};
         worker->Queue();
         return info.Env().Undefined();
