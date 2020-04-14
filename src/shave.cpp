@@ -30,24 +30,13 @@ inline Napi::Value CallbackError(std::string const& message, Napi::CallbackInfo 
 }
 
 struct QueryData {
-
-    std::string error_name{};
-    std::string result{};
-
-    /******* BUFFER *******/
     Napi::Reference<Napi::Buffer<char>> buffer{}; // Persistent: hey v8, dont destroy this
-    const char* data{};                           // * --> pointer...C string (array of chars)
-    std::size_t dataLength{};                     // using "std" namespace is best-practice
+    const char* data{};
+    std::size_t dataLength{};
     std::unique_ptr<std::string> shaved_tile{};
-
-    /******* ZOOMS *******/
     float zoom{};
     mbgl::optional<float> maxzoom{};
-
-    /******* whether to compress *******/
     bool compress = false;
-
-    /******* FILTER  *******/
     Filters* filters_obj = nullptr;
 };
 
@@ -123,10 +112,8 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
 static auto evaluate(mbgl::style::Filter const& filter,
                      float zoom,
                      mbgl::FeatureType ftype,
-                     vtzero::feature const& feature) -> bool // This properties arg is our custom type that we use in our lambda function below.
-{
+                     vtzero::feature const& feature) -> bool {
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
-    // std::string const& key is dynamic and comes from the Filter object
     mbgl::style::expression::EvaluationContext context(zoom, &geomfeature);
     return filter(context);
 }
@@ -372,14 +359,14 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
     zoom = zoom_val.As<Napi::Number>();
 
     // check maxzoom, should be a number
-    mbgl::optional<std::uint32_t> maxzoom;
+    mbgl::optional<float> maxzoom;
     if (options.Has("maxzoom")) {
         // Validate optional "maxzoom" value
         Napi::Value maxzoom_val = options.Get("maxzoom");
-        if (!maxzoom_val.IsNumber() || maxzoom_val.As<Napi::Number>().DoubleValue() < 0) {
+        if (!maxzoom_val.IsNumber() || maxzoom_val.As<Napi::Number>().FloatValue() < 0) {
             return CallbackError("option 'maxzoom' must be a positive integer.", info);
         }
-        maxzoom = maxzoom_val.As<Napi::Number>().Uint32Value();
+        maxzoom = maxzoom_val.As<Napi::Number>().FloatValue();
     }
 
     // validate compress (OPTIONAL)
@@ -449,7 +436,7 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
         // we convert to float here since comparison is against
         // floating point value as styles support fractional zooms
         query_data->zoom = static_cast<float>(zoom);
-        query_data->maxzoom = maxzoom ? static_cast<float>(*maxzoom) : mbgl::optional<float>();
+        query_data->maxzoom = maxzoom;
         query_data->compress = compress;
         query_data->filters_obj = Napi::ObjectWrap<Filters>::Unwrap(filters_object);
         auto* worker = new Shaver{std::move(query_data), callback};
