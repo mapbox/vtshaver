@@ -288,19 +288,21 @@ struct Shaver : Napi::AsyncWorker {
             SetError(ex.what());
         }
     }
-    void OnOK() override {
-        Napi::HandleScope scope(Env());
-        // create buffer from std string
-        std::string& shaved_tile_buffer = *shaved_tile_;
-        auto buffer = Napi::Buffer<char>::New(
-            Env(),
-            &shaved_tile_buffer[0],
-            shaved_tile_buffer.size(),
-            [](Napi::Env /*unused*/, char* /*unused*/, std::string* str_ptr) {
-                delete str_ptr;
-            },
-            shaved_tile_.release());
-        Callback().Call({Env().Null(), buffer});
+
+    std::vector<napi_value> GetResult(Napi::Env env) override {
+        if (shaved_tile_) {
+            std::string& shaved_tile_buffer = *shaved_tile_;
+            auto buffer = Napi::Buffer<char>::New(
+                Env(),
+                &shaved_tile_buffer[0],
+                shaved_tile_buffer.size(),
+                [](Napi::Env /*unused*/, char* /*unused*/, std::string* str_ptr) {
+                    delete str_ptr;
+                },
+                shaved_tile_.release());
+            return {Env().Null(), buffer};
+        }
+        return Base::GetResult(env); // returns an empty vector (default)
     }
 
   private:
