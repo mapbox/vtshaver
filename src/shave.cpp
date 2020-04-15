@@ -115,18 +115,10 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
 
     auto getValue(const std::string& key) const -> mbgl::optional<mbgl::Value> override {
         mbgl::optional<mbgl::Value> obj;
-
-        // If any of the property keys match the Filter key, we will keep the feature AND all of its properties.
-        // Therefore, we are not yet filtering properties. This is a TODO
-        feature_.for_each_property([&](vtzero::property&& prop) {
-            // We are comparing data_views to avoid needing to allocate memory for the comparison if we were to compare strings instead.
-            if (key == prop.key()) {
-                obj = vtzero::convert_property_value<mbgl::Value, mapping>(prop.value());
-                return false;
-            }
-            return true;
-        });
-
+        auto itr = map_.find(key);
+        if (itr != map_.end()) {
+            obj = itr->second;
+        }
         return obj;
     }
 
