@@ -16,6 +16,8 @@
 
 #include <tuple>
 #include <utility>
+#include <sstream>
+#include <iostream>
 
 #include <vtzero/builder.hpp>
 #include <vtzero/index.hpp>
@@ -293,15 +295,17 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
     }
 };
 
-static auto evaluate(mbgl::style::Filter const& filter,
+static const mbgl::style::expression::EvaluationResult evaluate(mbgl::style::Filter const& filter,
                      float zoom,
                      mbgl::FeatureType ftype,
-                     vtzero::feature const& feature) -> bool // This properties arg is our custom type that we use in our lambda function below.
+                     vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
 {
+    if (!filter.expression) {
+        return true;
+    }
     VTZeroGeometryTileFeature geomfeature(feature, ftype);
-    // std::string const& key is dynamic and comes from the Filter object
     mbgl::style::expression::EvaluationContext context(zoom, &geomfeature);
-    return filter(context);
+    return (*filter.expression)->evaluate(context);
 }
 
 static auto convertGeom(vtzero::GeomType geometry_type) -> mbgl::FeatureType {
@@ -354,9 +358,22 @@ void filterFeatures(vtzero::tile_builder* finalvt,
             return true; // skip to next feature
         }
 
-        // If evaluate() returns true, this feature includes properties that are relevant to the filter.
-        // So we add the feature to the final layer.
-        if (evaluate(mbgl_filter_obj, zoom, geometry_type, feature)) {
+        const mbgl::style::expression::EvaluationResult result = evaluate(mbgl_filter_obj, zoom, geometry_type, feature);
+        // expression hit error
+        if (!result) {
+            std::ostringstream msg;
+            msg << "[vtshaver] filter error: '" << result.error().message << "' skipping feature";
+            if (feature.has_id()) {
+              msg << " " << feature.id();
+            }
+            msg << " in " << std::string{layer.name()};
+            std::clog << msg.str() << "\n";
+            return true;
+        }
+
+        const mbgl::optional<bool> typed = mbgl::style::expression::fromExpressionValue<bool>(*result);
+        bool match = typed ? *typed : false;
+        if (match) {
             vtzero::geometry_feature_builder feature_builder{layer_builder};
             if (feature.has_id()) {
                 feature_builder.set_id(feature.id());
