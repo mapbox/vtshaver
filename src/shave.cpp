@@ -14,10 +14,10 @@
 #include <mbgl/tile/geometry_tile_data.hpp>
 #include <node/src/node_conversion.hpp>
 
+#include <iostream>
+#include <sstream>
 #include <tuple>
 #include <utility>
-#include <sstream>
-#include <iostream>
 
 #include <vtzero/builder.hpp>
 #include <vtzero/index.hpp>
@@ -296,9 +296,9 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
 };
 
 static const mbgl::style::expression::EvaluationResult evaluate(mbgl::style::Filter const& filter,
-                     float zoom,
-                     mbgl::FeatureType ftype,
-                     vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
+                                                                float zoom,
+                                                                mbgl::FeatureType ftype,
+                                                                vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
 {
     if (!filter.expression) {
         return true;
@@ -364,7 +364,7 @@ void filterFeatures(vtzero::tile_builder* finalvt,
             std::ostringstream msg;
             msg << "[vtshaver] filter error: '" << result.error().message << "' skipping feature";
             if (feature.has_id()) {
-              msg << " " << feature.id();
+                msg << " " << feature.id();
             }
             msg << " in " << std::string{layer.name()};
             std::clog << msg.str() << "\n";
