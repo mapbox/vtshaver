@@ -296,9 +296,9 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
 };
 
 static mbgl::style::expression::EvaluationResult evaluate(mbgl::style::Filter const& filter,
-                                                                float zoom,
-                                                                mbgl::FeatureType ftype,
-                                                                vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
+                                                          float zoom,
+                                                          mbgl::FeatureType ftype,
+                                                          vtzero::feature const& feature) // This properties arg is our custom type that we use in our lambda function below.
 {
     if (!filter.expression) {
         return true;
