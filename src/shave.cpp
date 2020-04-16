@@ -296,10 +296,14 @@ struct Shaver : Napi::AsyncWorker {
                 Env(),
                 &shaved_tile_buffer[0],
                 shaved_tile_buffer.size(),
-                [](Napi::Env /*unused*/, char* /*unused*/, std::string* str_ptr) {
+                [](Napi::Env env_, char* /*unused*/, std::string* str_ptr) {
+                    if (str_ptr != nullptr) {
+                        Napi::MemoryManagement::AdjustExternalMemory(env_, -static_cast<std::int64_t>(str_ptr->size()));
+                    }
                     delete str_ptr;
                 },
                 shaved_tile_.release());
+            Napi::MemoryManagement::AdjustExternalMemory(env, static_cast<std::int64_t>(shaved_tile_buffer.size()));
             return {Env().Null(), buffer};
         }
         return Base::GetResult(env); // returns an empty vector (default)
