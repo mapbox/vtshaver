@@ -20,12 +20,9 @@
 #include <vtzero/property_mapper.hpp>
 #include <vtzero/vector_tile.hpp>
 
-inline Napi::Value CallbackError(std::string const& message, Napi::CallbackInfo const& info) {
-    Napi::Object obj = Napi::Object::New(info.Env());
+inline Napi::Value CallbackError(Napi::Env env, std::string const& message, Napi::Function const& func) {
+    Napi::Object obj = Napi::Object::New(env);
     obj.Set("message", message);
-    auto func = info[info.Length() - 1].As<Napi::Function>();
-    // ^^^ here we assume that info has a valid callback function
-    // TODO: consider changing either method signature or adding internal checks
     return func.Call({obj});
 }
 
@@ -348,15 +345,16 @@ struct Shaver : Napi::AsyncWorker {
  */
 Napi::Value shave(Napi::CallbackInfo const& info) {
     // CALLBACK: ensure callback is a function
+    Napi::Env env = info.Env();
     std::size_t length = info.Length();
     if (length == 0) {
-        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
-        return info.Env().Null();
+        Napi::Error::New(env, "last argument must be a callback function").ThrowAsJavaScriptException();
+        return env.Null();
     }
     Napi::Value callback_val = info[info.Length() - 1];
     if (!callback_val.IsFunction()) {
-        Napi::Error::New(info.Env(), "last argument must be a callback function").ThrowAsJavaScriptException();
-        return info.Env().Null();
+        Napi::Error::New(env, "last argument must be a callback function").ThrowAsJavaScriptException();
+        return env.Null();
     }
 
     Napi::Function callback = callback_val.As<Napi::Function>();
@@ -364,25 +362,25 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
     // BUFFER: check first argument, should be a pbf object
 
     if (!info[0].IsBuffer()) {
-        return CallbackError("first arg 'buffer' must be a Protobuf buffer object", info);
+        return CallbackError(env, "first arg 'buffer' must be a Protobuf buffer object", callback);
     }
     auto buffer = info[0].As<Napi::Buffer<char>>();
 
     // OPTIONS: check second argument, should be an 'options' object
     Napi::Value options_val = info[1];
     if (!options_val.IsObject()) {
-        return CallbackError("second arg 'options' must be an object", info);
+        return CallbackError(env, "second arg 'options' must be an object", callback);
     }
     auto options = options_val.As<Napi::Object>();
 
     // check zoom, should be a number
     std::uint32_t zoom = 0;
     if (!options.Has("zoom")) {
-        return CallbackError("option 'zoom' not provided. Please provide a zoom level for this tile.", info);
+        return CallbackError(env, "option 'zoom' not provided. Please provide a zoom level for this tile.", callback);
     }
     Napi::Value zoom_val = options.Get("zoom");
     if (!zoom_val.IsNumber() || zoom_val.As<Napi::Number>().DoubleValue() < 0) {
-        return CallbackError("option 'zoom' must be a positive integer.", info);
+        return CallbackError(env, "option 'zoom' must be a positive integer.", callback);
     }
     zoom = zoom_val.As<Napi::Number>();
 
@@ -392,7 +390,7 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
         // Validate optional "maxzoom" value
         Napi::Value maxzoom_val = options.Get("maxzoom");
         if (!maxzoom_val.IsNumber() || maxzoom_val.As<Napi::Number>().FloatValue() < 0) {
-            return CallbackError("option 'maxzoom' must be a positive integer.", info);
+            return CallbackError(env, "option 'maxzoom' must be a positive integer.", callback);
         }
         maxzoom = maxzoom_val.As<Napi::Number>().FloatValue();
     }
@@ -405,20 +403,20 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
 
         // compress.type is REQUIRED
         if (!compress_options.Has("type")) {
-            return CallbackError("compress option 'type' not provided. Please provide "
-                                 "a compression type if using the compress option",
-                                 info);
+            return CallbackError(env, "compress option 'type' not provided. Please provide "
+                                      "a compression type if using the compress option",
+                                 callback);
         }
 
         Napi::Value compress_type = compress_options.Get("type");
         if (!compress_type.IsString()) {
-            return CallbackError("compress option 'type' must be a string", info);
+            return CallbackError(env, "compress option 'type' must be a string", callback);
         }
 
         std::string str = compress_type.As<Napi::String>();
         // compress.type can only be 'none' and 'gzip' for now
         if (str != "none" && str != "gzip") {
-            return CallbackError("compress type must equal 'none' or 'gzip'", info);
+            return CallbackError(env, "compress type must equal 'none' or 'gzip'", callback);
         }
         if (str == "gzip") {
             compress = true;
@@ -428,7 +426,7 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
         if (compress_options.Has("level")) {
             Napi::Value compress_level = compress_options.Get("level");
             if (!compress_level.IsNumber() || compress_level.As<Napi::Number>().Int32Value() < 0) {
-                return CallbackError("compress option 'level' must be an unsigned integer", info);
+                return CallbackError(env, "compress option 'level' must be an unsigned integer", callback);
             }
         }
     }
@@ -440,26 +438,24 @@ Napi::Value shave(Napi::CallbackInfo const& info) {
         if (filters_val.IsNull() ||
             filters_val.IsUndefined() ||
             !filters_val.IsObject()) {
-            return CallbackError(
-                "option 'filters' must be a shaver.Filters object",
-                info);
+            return CallbackError(env,
+                                 "option 'filters' must be a shaver.Filters object",
+                                 callback);
         }
 
         Napi::Object filters_object = filters_val.As<Napi::Object>();
 
-        // This is the same as calling InstanceOf() in JS-world
-        // [ /Nan::New\((\w+)\)->HasInstance\((\w+)\)/g, '$2.InstanceOf($1.Value())' ]
         if (!filters_object.InstanceOf(Filters::constructor.Value())) {
-            return CallbackError(
-                "option 'filters' must be a shaver.Filters object",
-                info);
+            return CallbackError(env,
+                                 "option 'filters' must be a shaver.Filters object",
+                                 callback);
         }
 
         // set up the query_data to pass into our threadpool
         auto query_data = std::make_unique<QueryData>(buffer, zoom, maxzoom, compress, Napi::ObjectWrap<Filters>::Unwrap(filters_object));
         auto* worker = new Shaver{std::move(query_data), callback};
         worker->Queue();
-        return info.Env().Undefined();
+        return env.Undefined();
     }
-    return CallbackError("must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", info);
+    return CallbackError(env, "must create a filters object using Shaver.Filters() and pass filters in to Shaver.shave", callback);
 }
