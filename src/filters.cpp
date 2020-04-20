@@ -34,8 +34,9 @@ Napi::Object Filters::Initialize(Napi::Env env, Napi::Object exports) {
 
 Filters::Filters(Napi::CallbackInfo const& info)
     : Napi::ObjectWrap<Filters>(info) {
+    Napi::Env env = info.Env();
     if (!info.IsConstructCall()) {
-        Napi::TypeError::New(Env(), "Cannot call constructor as function, you need to use 'new' keyword");
+        Napi::TypeError::New(env, "Cannot call constructor as function, you need to use 'new' keyword");
         return;
     }
 
@@ -44,7 +45,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
             if (info.Length() >= 1) {
                 Napi::Value filters_val = info[0];
                 if (!filters_val.IsObject()) {
-                    Napi::Error::New(Env(), "filters must be an object and cannot be null or undefined").ThrowAsJavaScriptException();
+                    Napi::Error::New(env, "filters must be an object and cannot be null or undefined").ThrowAsJavaScriptException();
                     return;
                 }
                 Napi::Object filters_ = filters_val.As<Napi::Object>();
@@ -54,7 +55,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                 for (std::uint32_t i = 0; i < length; ++i) {
                     Napi::Value layer_key = layers.Get(i);
                     if (layer_key.IsNull() || layer_key.IsUndefined()) {
-                        Napi::Error::New(Env(), "layer name must be a string and cannot be null or undefined").ThrowAsJavaScriptException();
+                        Napi::Error::New(env, "layer name must be a string and cannot be null or undefined").ThrowAsJavaScriptException();
                         return;
                     }
 
@@ -62,7 +63,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     Napi::Value layer_val = filters_.Get(layer_key);
 
                     if (!layer_val.IsObject() || layer_val.IsNull() || layer_val.IsUndefined()) {
-                        Napi::Error::New(Env(), "layer must be an object and cannot be null or undefined").ThrowAsJavaScriptException();
+                        Napi::Error::New(env, "layer must be an object and cannot be null or undefined").ThrowAsJavaScriptException();
                         return;
                     }
                     auto layer = layer_val.As<Napi::Object>();
@@ -74,30 +75,30 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     if (layer.Has("minzoom")) {
                         Napi::Value minzoom_val = layer.Get("minzoom");
                         if (!minzoom_val.IsNumber() || minzoom_val.As<Napi::Number>().DoubleValue() < 0) {
-                            Napi::Error::New(Env(), "Value for 'minzoom' must be a positive number.").ThrowAsJavaScriptException();
+                            Napi::Error::New(env, "Value for 'minzoom' must be a positive number.").ThrowAsJavaScriptException();
                             return;
                         }
                         minzoom = minzoom_val.As<Napi::Number>().DoubleValue();
                     } else {
-                        Napi::Error::New(Env(), "Filter must include a minzoom property.").ThrowAsJavaScriptException();
+                        Napi::Error::New(env, "Filter must include a minzoom property.").ThrowAsJavaScriptException();
                         return;
                     }
                     if (layer.Has("maxzoom")) {
                         Napi::Value maxzoom_val = layer.Get("maxzoom");
                         if (!maxzoom_val.IsNumber() || maxzoom_val.As<Napi::Number>().DoubleValue() < 0) {
-                            Napi::Error::New(Env(), "Value for 'maxzoom' must be a positive number.").ThrowAsJavaScriptException();
+                            Napi::Error::New(env, "Value for 'maxzoom' must be a positive number.").ThrowAsJavaScriptException();
                             return;
                         }
                         maxzoom = maxzoom_val.As<Napi::Number>().DoubleValue();
                     } else {
-                        Napi::Error::New(Env(), "Filter must include a maxzoom property.").ThrowAsJavaScriptException();
+                        Napi::Error::New(env, "Filter must include a maxzoom property.").ThrowAsJavaScriptException();
                         return;
                     }
                     // handle filters array
                     const Napi::Value layer_filter = layer.Get("filters");
                     // error handling in case filter value passed in from JS-world is somehow invalid
                     if (layer_filter.IsNull() || layer_filter.IsUndefined()) {
-                        Napi::Error::New(Env(), "Filters is not properly constructed.").ThrowAsJavaScriptException();
+                        Napi::Error::New(env, "Filters is not properly constructed.").ThrowAsJavaScriptException();
                         return;
                     }
 
@@ -109,7 +110,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     // Ex: { water: true }
                     // Because of this, we check for if the filter is an array or a boolean before converting to a mbgl Filter
                     // If a boolean and is true, create a null/empty Filter object.
-                    Napi::Object json = Env().Global().Get("JSON").As<Napi::Object>();
+                    Napi::Object json = env.Global().Get("JSON").As<Napi::Object>();
                     Napi::Function stringify = json.Get("stringify").As<Napi::Function>();
 
                     if (layer_filter.IsArray()) {
@@ -118,10 +119,10 @@ Filters::Filters(Napi::CallbackInfo const& info)
                         auto optional_filter = mbgl::style::conversion::convertJSON<mbgl::style::Filter>(filter_str, filterError);
                         if (!optional_filter) {
                             if (filterError.message == "filter property must be a string") {
-                                Napi::TypeError::New(Env(), "Unable to create Filter object, ensure all filters are expression-based").ThrowAsJavaScriptException();
+                                Napi::TypeError::New(env, "Unable to create Filter object, ensure all filters are expression-based").ThrowAsJavaScriptException();
 
                             } else {
-                                Napi::TypeError::New(Env(), filterError.message.c_str()).ThrowAsJavaScriptException();
+                                Napi::TypeError::New(env, filterError.message.c_str()).ThrowAsJavaScriptException();
                             }
                             return;
                         }
@@ -129,7 +130,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     } else if (layer_filter.IsBoolean() && layer_filter.As<Napi::Boolean>()) {
                         filter = mbgl::style::Filter{};
                     } else {
-                        Napi::TypeError::New(Env(), "invalid filter value, must be an array or a boolean").ThrowAsJavaScriptException();
+                        Napi::TypeError::New(env, "invalid filter value, must be an array or a boolean").ThrowAsJavaScriptException();
                         return;
                     }
 
@@ -139,7 +140,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     // handle property array
                     Napi::Value const layer_properties = layer.Get("properties");
                     if (layer_properties.IsNull() || layer_properties.IsUndefined()) {
-                        Napi::Error::New(Env(), "Property-Filters is not properly constructed.").ThrowAsJavaScriptException();
+                        Napi::Error::New(env, "Property-Filters is not properly constructed.").ThrowAsJavaScriptException();
                         return;
                     }
 
@@ -164,7 +165,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                         property.first = all;
                         property.second = {};
                     } else {
-                        Napi::TypeError::New(Env(), "invalid filter value, must be an array or a boolean").ThrowAsJavaScriptException();
+                        Napi::TypeError::New(env, "invalid filter value, must be an array or a boolean").ThrowAsJavaScriptException();
                         return;
                     }
                     std::string source_layer = layer_key.ToString();
@@ -172,7 +173,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                 }
             }
         } catch (std::exception const& ex) {
-            Napi::TypeError::New(Env(), ex.what()).ThrowAsJavaScriptException();
+            Napi::TypeError::New(env, ex.what()).ThrowAsJavaScriptException();
         }
     }
 }
