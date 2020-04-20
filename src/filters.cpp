@@ -11,8 +11,7 @@
 Napi::FunctionReference Filters::constructor; // NOLINT
 
 Napi::Object Filters::Initialize(Napi::Env env, Napi::Object exports) {
-    Napi::Function func = DefineClass(env, "Filters",
-                                      {InstanceMethod("layers", &Filters::layers)});
+    Napi::Function func = DefineClass(env, "Filters", {InstanceMethod<&Filters::layers>("layers")});
     constructor = Napi::Persistent(func);
     constructor.SuppressDestruct();
     exports.Set("Filters", func);
