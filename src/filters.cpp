@@ -179,11 +179,11 @@ Filters::Filters(Napi::CallbackInfo const& info)
 }
 
 Napi::Value Filters::layers(Napi::CallbackInfo const& info) {
-    Napi::HandleScope scope(info.Env());
+    Napi::EscapableHandleScope scope(info.Env());
     auto layers = Napi::Array::New(Env());
     std::uint32_t idx = 0;
     for (auto const& lay : filters) {
         layers.Set(idx++, lay.first);
     }
-    return layers;
+    return scope.Escape(layers);
 }
