@@ -26,8 +26,6 @@ class Filters : public Napi::ObjectWrap<Filters> {
 
     Napi::Value layers(Napi::CallbackInfo const& info);
 
-    //static auto constructor() -> Napi::FunctionReference&;
-
     void add_filter(filter_key_type&& key, filter_value_type&& filter, filter_properties_type&& properties, zoom_type minzoom, zoom_type maxzoom) {
         // add a new key/value pair, with the value equaling a tuple 'filter_values_type' defined above
         filters.emplace(key, std::make_tuple(std::move(filter), std::move(properties), minzoom, maxzoom));
