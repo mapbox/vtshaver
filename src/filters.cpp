@@ -47,8 +47,8 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     Napi::Error::New(env, "filters must be an object and cannot be null or undefined").ThrowAsJavaScriptException();
                     return;
                 }
-                Napi::Object filters_ = filters_val.As<Napi::Object>();
-                Napi::Array layers = filters_.GetPropertyNames();
+                Napi::Object filters_obj = filters_val.As<Napi::Object>();
+                Napi::Array layers = filters_obj.GetPropertyNames();
                 // Loop through each layer in the object and convert its filter to a mbgl::style::Filter
                 std::uint32_t length = layers.Length();
                 for (std::uint32_t i = 0; i < length; ++i) {
@@ -59,7 +59,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     }
 
                     // get v8::Object containing layer
-                    Napi::Value layer_val = filters_.Get(layer_key);
+                    Napi::Value layer_val = filters_obj.Get(layer_key);
 
                     if (!layer_val.IsObject() || layer_val.IsNull() || layer_val.IsUndefined()) {
                         Napi::Error::New(env, "layer must be an object and cannot be null or undefined").ThrowAsJavaScriptException();
