@@ -82,17 +82,13 @@ struct mapping : vtzero::property_value_mapping {
 class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
     vtzero::feature const& feature_;
     mbgl::FeatureType ftype_;
-    mbgl::PropertyMap map_ = {};
+    mutable mbgl::optional<mbgl::PropertyMap> properties_;
     mbgl::GeometryCollection geom_ = {};
 
   public:
     VTZeroGeometryTileFeature(vtzero::feature const& feature, mbgl::FeatureType ftype)
         : feature_(feature),
           ftype_(ftype) {
-        feature_.for_each_property([&](const vtzero::property& prop) {
-            map_.emplace(std::string(prop.key()), vtzero::convert_property_value<mbgl::Value, mapping>(prop.value()));
-            return true;
-        });
     }
 
     auto getType() const -> mbgl::FeatureType override {
@@ -107,14 +103,34 @@ class VTZeroGeometryTileFeature : public mbgl::GeometryTileFeature {
     }
 
     auto getProperties() const -> const mbgl::PropertyMap& override {
-        return map_;
+        if (!properties_) {
+            properties_ = mbgl::PropertyMap();
+            if (!feature_.empty()) {
+                properties_->reserve(feature_.num_properties());
+                feature_.for_each_property([&](const vtzero::property& prop) {
+                    properties_->emplace(std::string(prop.key()), vtzero::convert_property_value<mbgl::Value, mapping>(prop.value()));
+                    return true;
+                });
+            }
+        }
+        return *properties_;
     }
 
     auto getValue(const std::string& key) const -> mbgl::optional<mbgl::Value> override {
         mbgl::optional<mbgl::Value> obj;
-        auto itr = map_.find(key);
-        if (itr != map_.end()) {
-            obj = itr->second;
+        if (properties_) {
+            auto itr = properties_->find(key);
+            if (itr != properties_->end()) {
+                obj = itr->second;
+            }
+        } else {
+            feature_.for_each_property([&](vtzero::property&& prop) {
+                if (key == prop.key()) {
+                    obj = vtzero::convert_property_value<mbgl::Value, mapping>(prop.value());
+                    return false;
+                }
+                return true;
+            });
         }
         return obj;
     }
