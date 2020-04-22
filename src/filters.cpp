@@ -34,11 +34,7 @@ Napi::Object Filters::Initialize(Napi::Env env, Napi::Object exports) {
 Filters::Filters(Napi::CallbackInfo const& info)
     : Napi::ObjectWrap<Filters>(info) {
     Napi::Env env = info.Env();
-    if (!info.IsConstructCall()) {
-        Napi::TypeError::New(env, "Cannot call constructor as function, you need to use 'new' keyword").ThrowAsJavaScriptException();
-        return;
-    }
-
+    Napi::HandleScope scope(env);
     try {
         if (info.Length() >= 1) {
             Napi::Value filters_val = info[0];
@@ -57,7 +53,6 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     return;
                 }
 
-                // get v8::Object containing layer
                 Napi::Value layer_val = filters_obj.Get(layer_key);
 
                 if (!layer_val.IsObject() || layer_val.IsNull() || layer_val.IsUndefined()) {
@@ -132,10 +127,6 @@ Filters::Filters(Napi::CallbackInfo const& info)
                     return;
                 }
 
-                // insert the key/value into filters map
-                // TODO(dane): what if we have duplicate source-layer filters?
-
-                // handle property array
                 Napi::Value const layer_properties = layer.Get("properties");
                 if (layer_properties.IsNull() || layer_properties.IsUndefined()) {
                     Napi::Error::New(env, "Property-Filters is not properly constructed.").ThrowAsJavaScriptException();
