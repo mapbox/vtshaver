@@ -35,7 +35,7 @@ Filters::Filters(Napi::CallbackInfo const& info)
     : Napi::ObjectWrap<Filters>(info) {
     Napi::Env env = info.Env();
     if (!info.IsConstructCall()) {
-        Napi::TypeError::New(env, "Cannot call constructor as function, you need to use 'new' keyword");
+        Napi::TypeError::New(env, "Cannot call constructor as function, you need to use 'new' keyword").ThrowAsJavaScriptException();
         return;
     }
 
