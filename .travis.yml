@@ -1,5 +1,7 @@
 language: node_js
 
+node_js: 12
+
 # enable c++11/14 builds
 addons:
   apt:
@@ -11,7 +13,6 @@ install:
   - which node
   - clang++ -v
   - which clang++
-  - make distclean
   - make ${BUILDTYPE}
 
 # *Here we run tests*
@@ -34,69 +35,34 @@ matrix:
 
     ## ** Builds that are published **
 
-    # linux cfi build node v6/release
+    # linux cfi build node v10/release
     - os: linux
-      env: BUILDTYPE=release TOOLSET=cfi CXXFLAGS="-fsanitize=cfi -fvisibility=hidden" LDFLAGS="-fsanitize=cfi"
-      node_js: 10
-    # linux publishable node v10/release
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 10
-    # linux publishable node v10/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 10
-    # linux publishable node v12/release
+      env: BUILDTYPE=release TOOLSET=cfi CXXFLAGS="-flto -fsanitize=cfi -fvisibility=hidden" LDFLAGS="-flto -fsanitize=cfi"
+    # linux publishable node release
     - os: linux
       env: BUILDTYPE=release
-      node_js: 12
-    # linux publishable node v12/debug
+    # linux publishable node debug
     - os: linux
       env: BUILDTYPE=debug
-      node_js: 12
-    # linux publishable node v13/release
-    - os: linux
-      env: BUILDTYPE=release
-      node_js: 13
-    # linux publishable node v13/debug
-    - os: linux
-      env: BUILDTYPE=debug
-      node_js: 13
-    # osx publishable node v10/release
+    # osx publishable node release
     - os: osx
-      osx_image: xcode11.3
+      osx_image: xcode11
       env: BUILDTYPE=release
-      node_js: 10
-    # linux sanitizer build node v6/debug
+    # osx publishable node asan
     - os: linux
       env: BUILDTYPE=debug TOOLSET=asan
-      node_js: 10
       sudo: required
       # Overrides `install` to set up custom asan flags
       install:
         - make sanitize
       # Overrides `before_script` (tests are already run in `make sanitize`)
-      before_script:
-        - true
-    # osx sanitizer build node v6/debug
-    - os: osx
-      osx_image: xcode11.3
-      env: BUILDTYPE=debug TOOLSET=asan
-      node_js: 10
-      sudo: required
-      # Overrides `install` to set up custom asan flags
-      install:
-        - make sanitize
-      # Overrides `before_script` (tests are already run in `make sanitize`)
-      before_script:
-        - true
+      before_script: true
 
     ## ** Builds that do not get published **
 
     # g++ build (default builds all use clang++)
     - os: linux
-      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" LINK="g++-6" AR="ar" NM="nm"
-      node_js: 10
+      env: BUILDTYPE=debug CXX="g++-6" CC="gcc-6" LINK="g++-6" AR="ar" NM="nm" CXXFLAGS="-fext-numeric-literals"
       addons:
         apt:
           sources:
@@ -108,24 +74,20 @@ matrix:
       install:
         - make ${BUILDTYPE}
       # Overrides `script` to disable publishing
-      script:
-        - true
+      script: true
     # Coverage build
     - os: linux
       env: BUILDTYPE=debug CXXFLAGS="--coverage" LDFLAGS="--coverage"
-      node_js: 10
       # Overrides `script` to publish coverage data to codecov
       script:
         - export PATH=$(pwd)/mason_packages/.link/bin/:${PATH}
+        - PATH=`echo $PATH | sed -e 's/:\.\/node_modules\/\.bin//'` # remove relative path ^^
         - which llvm-cov
-        # upload coverage
-        - pip install --user codecov
-        - codecov --gcov-exec "llvm-cov gcov -l"
-        - nyc report --reporter json && codecov -f ./coverage/coverage-final.json --disable=gcov
+        - curl -S -f https://codecov.io/bash -o codecov
+        - chmod +x codecov
+        - ./codecov -x "llvm-cov gcov" -Z
     # Clang format build
     - os: linux
-      # can be generic since we don't need nodejs to run formatting
-      language: generic
       env: CLANG_FORMAT
       # Overrides `install` to avoid initializing clang toolchain
       install:
@@ -134,15 +96,12 @@ matrix:
         # and get in the habit of running these locally before committing)
         - make format
       # Overrides `before_script`, no need to run tests
-      before_script:
-        - true
+      before_script: true
       # Overrides `script` to disable publishing
-      script:
-        - true
+      script: true
     # Clang tidy build
     - os: linux
       env: CLANG_TIDY
-      node_js: 10
       # Overrides `install` to avoid initializing clang toolchain
       install:
         # First run the clang-tidy target
@@ -151,8 +110,6 @@ matrix:
         # and get in the habit of running these locally before committing)
         - make tidy
       # Overrides `before_script`, no need to run tests
-      before_script:
-        - true
+      before_script: true
       # Overrides `script` to disable publishing
-      script:
-        - true
+      script: true
