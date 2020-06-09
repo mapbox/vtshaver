@@ -19,7 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^13.12.0",
-    "node-addon-api": "nodejs/node-addon-api",
+    "node-addon-api": "^2.0.1",
     "node-pre-gyp": "^0.14.0"
   },
   "bin": {
