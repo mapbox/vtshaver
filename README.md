@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.com/mapbox/vtshaver.svg?branch=master)](https://travis-ci.com/mapbox/vtshaver)
 [![codecov](https://codecov.io/gh/mapbox/vtshaver/branch/master/graph/badge.svg)](https://codecov.io/gh/mapbox/vtshaver)
-[![badge](https://mapbox.s3.amazonaws.com/cpp-assets/node-cpp-skel-badge_blue.svg)](https://github.com/mapbox/node-cpp-skel)
+[![node-cpp-skel](https://raw.githubusercontent.com/mapbox/cpp/master/assets/node-cpp-skel-badge_blue.svg)](https://github.com/mapbox/node-cpp-skel)
 
 ![shaved-bearded tile and unshaved-bearded tile](https://user-images.githubusercontent.com/1943001/37542004-e49656b6-2919-11e8-9635-db1b47fcd0fa.jpg)
 
