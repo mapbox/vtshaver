@@ -34,7 +34,6 @@ Napi::Object Filters::Initialize(Napi::Env env, Napi::Object exports) {
 Filters::Filters(Napi::CallbackInfo const& info)
     : Napi::ObjectWrap<Filters>(info) {
     Napi::Env env = info.Env();
-    Napi::HandleScope scope(env);
     try {
         if (info.Length() >= 1) {
             Napi::Value filters_val = info[0];
