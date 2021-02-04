@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.0
+- Support universal binaries by switching to `node-addon-api`
+- Binaries are now compiled with clang 10.x
+- `AsyncWorker` based implementation
+
 ## v0.2.1
 - New CLI called `vtshaver-filters` which parses a style, collapses all zoom and filter restrictions per source-layer, and outputs a json object the parsed metadata to be used for shaving.
 - Improvements to the `vtshave` CLI: now supporting compressed tiles as input and will output before and after bytes for the original and shaved tile.
