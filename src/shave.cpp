@@ -6,7 +6,6 @@
 #include <gzip/compress.hpp>
 #include <gzip/decompress.hpp>
 #include <gzip/utils.hpp>
-#include <map>
 #include <mbgl/style/conversion.hpp>
 #include <mbgl/style/conversion/filter.hpp>
 #include <mbgl/style/filter.hpp>
