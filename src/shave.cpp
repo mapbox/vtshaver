@@ -13,7 +13,6 @@
 
 #include <tuple>
 #include <utility>
-
 #include <vtzero/builder.hpp>
 #include <vtzero/index.hpp>
 #include <vtzero/property_mapper.hpp>
@@ -305,8 +304,8 @@ struct Shaver : Napi::AsyncWorker {
         if (shaved_tile_) {
             std::string& shaved_tile_buffer = *shaved_tile_;
             auto buffer = Napi::Buffer<char>::New(
-                Env(),
-                &shaved_tile_buffer[0],
+                env,
+                shaved_tile_buffer.empty() ? nullptr : &shaved_tile_buffer[0],
                 shaved_tile_buffer.size(),
                 [](Napi::Env env_, char* /*unused*/, std::string* str_ptr) {
                     if (str_ptr != nullptr) {
@@ -316,7 +315,7 @@ struct Shaver : Napi::AsyncWorker {
                 },
                 shaved_tile_.release());
             Napi::MemoryManagement::AdjustExternalMemory(env, static_cast<std::int64_t>(shaved_tile_buffer.size()));
-            return {Env().Null(), buffer};
+            return {env.Null(), buffer};
         }
         return Base::GetResult(env); // returns an empty vector (default)
     }
