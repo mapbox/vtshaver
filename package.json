@@ -8,7 +8,7 @@
     "url": "git@github.com:mapbox/vtshaver.git"
   },
   "scripts": {
-    "test": "nyc --all --include bin --include lib tape test/*.test.js",
+    "test": "tape test/*.test.js",
     "install": "node-pre-gyp install --fallback-to-build",
     "docs": "npm run docs-cpp && npm run docs-js",
     "docs-cpp": "documentation build src/*.cpp --re --polyglot -f md -o API-CPP.md",
@@ -34,7 +34,6 @@
     "bytes": "^2.5.0",
     "d3-queue": "^3.0.1",
     "minimist": "^1.2.5",
-    "nyc": "^14.1.1",
     "pbf": "^3.1.0",
     "tape": "^4.5.1"
   },
