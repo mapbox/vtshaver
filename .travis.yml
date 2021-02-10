@@ -38,9 +38,11 @@ matrix:
     # linux cfi build node v10/release
     - os: linux
       env: BUILDTYPE=release TOOLSET=cfi CXXFLAGS="-flto -fsanitize=cfi -fvisibility=hidden" LDFLAGS="-flto -fsanitize=cfi"
+      node_js: 10
     # linux publishable node release
     - os: linux
       env: BUILDTYPE=release
+      node_js: 12
     # linux publishable node debug
     - os: linux
       env: BUILDTYPE=debug
