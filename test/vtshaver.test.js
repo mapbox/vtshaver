@@ -1,3 +1,5 @@
+'use strict';
+
 var test = require('tape');
 var Shaver = require('../lib/index.js');
 var fs = require('fs');
