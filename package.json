@@ -20,7 +20,7 @@
   "dependencies": {
     "@mapbox/mapbox-gl-style-spec": "^13.12.0",
     "@mapbox/node-pre-gyp": "^1.x",
-    "node-addon-api": "^3.1.0"
+    "node-addon-api": "3.0.0"
   },
   "bin": {
     "vtshave": "./bin/vtshave.js",
