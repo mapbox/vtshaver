@@ -434,6 +434,23 @@ test('success: layers sucessfully shaved, features shaved - equal ==', function(
   });
 });
 
+test('success: layer remains with visibility: none set in style layer', function(t) {
+  var filters = new Shaver.Filters(Shaver.styleToFilters(require('./fixtures/styles/visibility-none.json')));
+  var buffer = mvtf.get('017').buffer; // single layer called "hello" with one point feature
+
+  Shaver.shave(buffer, {filters: filters, zoom: 16}, function(err, shavedTile) {
+    if (err) throw err;
+    var postTile = vtinfo(shavedTile);
+    t.ok(shavedTile);
+    t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
+    t.equals(postTile.layers[0].features, 1, 'expected number of features after filtering');
+    t.equals(postTile.layers[0].name, 'hello', 'shaved tile contains expected layer');
+    t.ok((shavedTile.length < buffer.length && shavedTile.length !== 0), 'successfully shaved');
+    if (SHOW_COMPARE) console.log("**** Tile size before: " + buffer.length + "\n**** Tile size after: " + shavedTile.length);
+    t.end();
+  });
+});
+
 test('success: evaluate function returns empty object because no matches', function(t) {
   var sizeBefore = defaultBuffer.length;
   var beforeTile = vtinfo(defaultBuffer);
