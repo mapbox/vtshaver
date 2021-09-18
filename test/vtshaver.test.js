@@ -691,16 +691,13 @@ test('succeed: expression filters with zoom condition - z16', function(t) {
   });
 });
 
-// Per https://github.com/mapbox/mapbox-gl-native/pull/12065
-test('failure: legacy + expression filter not supported', function(t) {
+// GL-native throws if legacy filters are mixed with new style expressions (https://github.com/mapbox/mapbox-gl-native/pull/12065)
+// This asserts that shaver does not throw because we auto-upgrade legacy filters now
+test('legacy + expression filter is supported', function(t) {
   var result = Shaver.styleToFilters(style_expressions_legacy);
-  try {
-    var filters = new Shaver.Filters(result);
-  } catch(err) {
-    t.ok(err);
-    t.equals(err.message, 'Unable to create Filter object, ensure all filters are expression-based', 'expected error due to legacy/expression combo filter');
-    t.end();
-  }
+  var filters = new Shaver.Filters(result);
+  t.ok(filters);
+  t.end();
 });
 
 test('failure: creating Shaver.Filters() with invalid object', function(t) {
