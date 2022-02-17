@@ -1,6 +1,6 @@
 # Changelog
 
-## v3.0.0
+## v0.3.0
 - Support universal binaries by switching to `node-addon-api`
 - Binaries are now compiled with clang 10.x
 - `AsyncWorker` based implementation
