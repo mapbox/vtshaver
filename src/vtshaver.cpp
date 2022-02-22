@@ -1,9 +1,10 @@
 #include "filters.hpp"
 #include "shave.hpp"
 
-static void init(v8::Local<v8::Object> target) {
-    Nan::SetMethod(target, "shave", shave);
-    Filters::Initialize(target);
+Napi::Object init(Napi::Env env, Napi::Object exports) {
+    exports.Set(Napi::String::New(env, "shave"), Napi::Function::New(env, shave));
+    Filters::Initialize(env, exports);
+    return exports;
 }
 
-NODE_MODULE(NODE_GYP_MODULE_NAME, init) // NOLINT
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, init) // NOLINT

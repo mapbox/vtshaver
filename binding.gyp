@@ -11,17 +11,18 @@
   'includes': [ 'common.gypi' ],
   'variables': { # custom variables we use specific to this file
       'error_on_warnings%':'true', # can be overriden by a command line variable because of the % sign using "WERROR" (defined in Makefile)
-      # Use this variable to silence warnings from mason dependencies and from NAN
+      # Use this variable to silence warnings from mason dependencies
       # It's a variable to make easy to pass to
       # cflags (linux) and xcode (mac)
       'system_includes': [
-        "-isystem <(module_root_dir)/<!(node -e \"require('nan')\")",
+        "-isystem <!@(node -p \"require('node-addon-api').include.slice(1,-1)\")",
         "-isystem <(module_root_dir)/mason_packages/.link/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/variant/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/optional",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geometry.hpp/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geojson.hpp/include",
+        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/extras/rapidjson/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/wagyu/include',
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/nunicode/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/boost/include',

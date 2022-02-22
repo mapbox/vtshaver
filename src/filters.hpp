@@ -2,12 +2,12 @@
 
 #include <map>
 #include <mbgl/style/filter.hpp>
-#include <nan.h>
+#include <napi.h>
 #include <tuple>
 
 // This class adheres to the rule of Zero
 // because we define no custom destructor or copy constructor
-class Filters : public Nan::ObjectWrap {
+class Filters : public Napi::ObjectWrap<Filters> {
   public:
     using filter_value_type = mbgl::style::Filter;
     using filter_properties_types = enum { all,
@@ -18,14 +18,13 @@ class Filters : public Nan::ObjectWrap {
     using filter_values_type = std::tuple<filter_value_type, filter_properties_type, zoom_type, zoom_type>;
     using filters_type = std::map<filter_key_type, filter_values_type>;
 
+    // ctor
+    static Napi::FunctionReference constructor;
     // initializer
-    static void Initialize(v8::Local<v8::Object> target);
+    static Napi::Object Initialize(Napi::Env env, Napi::Object exports);
+    explicit Filters(Napi::CallbackInfo const& info);
 
-    // method required for the constructor
-    static NAN_METHOD(New); // Filters instance is stored here
-    static NAN_METHOD(layers);
-
-    static auto constructor() -> Nan::Persistent<v8::FunctionTemplate>&;
+    Napi::Value layers(Napi::CallbackInfo const& info);
 
     void add_filter(filter_key_type&& key, filter_value_type&& filter, filter_properties_type&& properties, zoom_type minzoom, zoom_type maxzoom) {
         // add a new key/value pair, with the value equaling a tuple 'filter_values_type' defined above
@@ -35,12 +34,6 @@ class Filters : public Nan::ObjectWrap {
     auto get_filters() const -> filters_type const& {
         return filters;
     }
-
-    // Grabs the persisted Filters ref
-    // Calling this within vt_shaver when creating the baton
-    void _ref() { Ref(); }
-    // To setup for garbage collection
-    void _unref() { Unref(); }
 
   private:
     filters_type filters{};
