@@ -1,12 +1,15 @@
 language: node_js
+dist: bionic
 
-node_js: 12
+node_js: 16
 
 # enable c++11/14 builds
 addons:
   apt:
     sources: [ 'ubuntu-toolchain-r-test' ]
-    packages: [ 'libstdc++-5-dev' ]
+    packages: [ 'libstdc++-5-dev', 'python3.6' ]
+env:
+  - PYTHON=3.6
 
 install:
   - node -v
