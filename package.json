@@ -35,7 +35,7 @@
     "d3-queue": "^3.0.7",
     "minimist": "^1.2.5",
     "pbf": "^3.2.1",
-    "tape": "^5.5.2"
+    "tape": "^4.5.1"
   },
   "binary": {
     "module_name": "vtshaver",
