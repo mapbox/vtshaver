@@ -1,13 +1,13 @@
 # This file inherits default targets for Node addons, see https://github.com/nodejs/node-gyp/blob/master/addon.gypi
 {
   # https://github.com/springmeyer/gyp/blob/master/test/make_global_settings/wrapper/wrapper.gyp
-  'make_global_settings': [
-    ['CXX', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
-    ['CC', '<(module_root_dir)/mason_packages/.link/bin/clang'],
-    ['LINK', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
-    ['AR', '<(module_root_dir)/mason_packages/.link/bin/llvm-ar'],
-    ['NM', '<(module_root_dir)/mason_packages/.link/bin/llvm-nm']
-  ],
+#  'make_global_settings': [
+#    ['CXX', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
+#    ['CC', '<(module_root_dir)/mason_packages/.link/bin/clang'],
+#    ['LINK', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
+#    ['AR', '<(module_root_dir)/mason_packages/.link/bin/llvm-ar'],
+#    ['NM', '<(module_root_dir)/mason_packages/.link/bin/llvm-nm']
+#  ],
   'includes': [ 'common.gypi' ],
   'variables': { # custom variables we use specific to this file
       'error_on_warnings%':'true', # can be overriden by a command line variable because of the % sign using "WERROR" (defined in Makefile)
