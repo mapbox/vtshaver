@@ -6,3 +6,4 @@ mason_packages
 *tgz
 coverage
 .nyc_output
+.vscode
