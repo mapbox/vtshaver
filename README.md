@@ -76,7 +76,7 @@ make
 
 For Mac M1 users, there are a couple of extra steps before building
 
-- Patch binding.gyp in the local repo clone to comment out linking instructions as follows
+- Comment out linking instructions in your local binding.gyp as follows
 ```
 #  'make_global_settings': [
 #    ['CXX', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
