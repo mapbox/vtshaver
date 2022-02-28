@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/vtshaver",
-  "version": "0.3.1-node16",
+  "version": "0.3.1",
   "description": "Creates style-optimized vector tiles",
   "main": "./lib/index.js",
   "repository": {
