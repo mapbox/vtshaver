@@ -45,7 +45,7 @@ matrix:
       env: BUILDTYPE=debug
     # osx publishable node release
     - os: osx
-      osx_image: xcode11
+      osx_image: xcode12
       env: BUILDTYPE=release
     # osx publishable node asan
     - os: linux
