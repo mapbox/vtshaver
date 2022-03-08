@@ -68,16 +68,28 @@ Example:
 
 # Develop
 
-Setup fixtures for bench test
-
-```
-git submodule update --init
-```
-
 Build binaries
 
 ```
 make
+```
+
+For Mac M1 users, there are a couple of extra steps before building
+
+- Comment out linking instructions in your local binding.gyp as follows
+```
+#  'make_global_settings': [
+#    ['CXX', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
+#    ['CC', '<(module_root_dir)/mason_packages/.link/bin/clang'],
+#    ['LINK', '<(module_root_dir)/mason_packages/.link/bin/clang++'],
+#    ['AR', '<(module_root_dir)/mason_packages/.link/bin/llvm-ar'],
+#    ['NM', '<(module_root_dir)/mason_packages/.link/bin/llvm-nm']
+#  ],
+```
+
+- Switch to x86_64 processor since arm64 has unresolved issues with the latest mbgl-core library
+```
+$ arch --x86_64 zsh
 ```
 
 # Test
@@ -89,7 +101,7 @@ make test
 Run bench test
 
 ```
-time node bench/bench-batch.js --iterations 50 --concurrency 10
+node bench/bench-batch.js --iterations 50 --concurrency 10
 ```
 
 Optionally combine with the `time` command

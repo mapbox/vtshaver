@@ -1,6 +1,5 @@
 language: node_js
-
-node_js: 12
+dist: bionic
 
 # enable c++11/14 builds
 addons:
@@ -46,7 +45,7 @@ matrix:
       env: BUILDTYPE=debug
     # osx publishable node release
     - os: osx
-      osx_image: xcode11
+      osx_image: xcode12
       env: BUILDTYPE=release
     # osx publishable node asan
     - os: linux

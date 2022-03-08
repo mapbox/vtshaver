@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1
+- Upgrade node to v16
+- Removes cxx11abi flag custom setting as it's the default for compilers building with newer libc++
+- Upgrades mbgl-core to 1.6.0-cxx11abi rebuilt with new compiler to remove flag conflict
+- Upgrades node-pre-gyp, node-addon-api dependencies
+- Upgrades @mapbox/mvt-fixtures, aws-sdk, bytes, d3-queue, pbf dependencies
+
 ## v0.3.0
 - Support universal binaries by switching to `node-addon-api`
 - Binaries are now compiled with clang 10.x
