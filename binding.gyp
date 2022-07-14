@@ -97,6 +97,9 @@
         # mbgl::util::convertUTF8ToUTF16(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
         './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp'
       ],
+      'ldflags': [
+        '-Wl,-z,now',
+      ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
       # A portable file extension name. Build static lib (.a) then when you're linking,
