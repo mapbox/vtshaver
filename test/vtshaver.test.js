@@ -943,4 +943,46 @@ test('failure: Shaver.shave(): invalid callback', function(t) {
     t.equals(err.message, 'last argument must be a callback function', 'expected error message');
     t.end();
   }
-});
+
+  test('success: triggers mbgl-core symbol error ', function(t) {
+    var buffer = mvtf.get('043').buffer;
+    var sizeBefore = buffer.length;
+    var filters = new Shaver.Filters(Shaver.styleToFilters({
+      layers: [
+        {
+          "source-layer": "park_features",
+          filter: ["in", "poi", ["downcase", "poi"]],
+        }
+      ]
+    }));
+  
+    var options = {
+      filters: filters,
+      zoom: 14,
+      compress: {
+        type: 'gzip'
+      }
+    };
+  
+    // Compress the tile beforehand, for code coverage
+    zlib.gzip(buffer, function(err, compressedBuffer) {
+      if (err) throw err;
+  
+      Shaver.shave(compressedBuffer, options, function(err, compressedShavedTile) {
+        if (err) throw err;
+        t.ok(compressedShavedTile);
+        t.ok(compressedShavedTile[0] == 0x1f && compressedShavedTile[1] == 0x8b, 'shaved tile is compressed');
+  
+        // Decompress the tile before we can assert its contents
+        zlib.gunzip(compressedShavedTile, function(err, decompressedShavedTile) {
+          var postTile = vtinfo(decompressedShavedTile);
+          t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
+          t.equals(postTile.layers[0].name, 'park_features', 'shaved tile contains expected layer');
+          t.ok((decompressedShavedTile.length < sizeBefore && decompressedShavedTile.length !== 0), 'successfully shaved');
+          if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + decompressedShavedTile.length);
+          t.end();
+        });
+      });
+    });
+  });
+  
