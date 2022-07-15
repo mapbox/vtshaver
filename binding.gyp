@@ -87,7 +87,6 @@
         './src/shave.cpp',
         './src/filters.cpp',
         './mason_packages/.link/src/mbgl/tile/geometry_tile_data.cpp',
-        './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp',
         './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
         # mbgl::LayerManager::annotationsEnabled
         './mason_packages/.link/platform/default/src/mbgl/layermanager/layer_manager.cpp',
@@ -112,6 +111,15 @@
               'OTHER_CPLUSPLUSFLAGS': [ '-Werror' ],
               'OTHER_LDFLAGS': ['-framework Foundation']
             }
+        }],
+        ['OS=="linux"', {
+          'sources': [
+            './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp'
+          ]
+        }, { # OS != "linux" so Mac
+          'sources': [
+            './mason_packages/.link/platform/darwin/src/string_nsstring.mm'
+          ]
         }]
       ],
       # Add to cpp glossary (or other doc in cpp repo) different types of binaries (.node, .a, static, dynamic (.so on linux and .dylib on osx))
