@@ -954,7 +954,7 @@ test.only('success: triggers mbgl-core symbol error ', function(t) {
     layers: [
       {
         "source-layer": "park_features",
-        filter: ["in", "clos", ["downcase", ["get", "poi"]]],
+        filter: ["in", "poi", ["downcase", "poi"]],
       }
     ]
   }));
@@ -982,7 +982,7 @@ test.only('success: triggers mbgl-core symbol error ', function(t) {
         t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
         t.equals(postTile.layers[0].name, 'park_features', 'shaved tile contains expected layer');
         t.ok((decompressedShavedTile.length < sizeBefore && decompressedShavedTile.length !== 0), 'successfully shaved');
-        if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
+        if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + decompressedShavedTile.length);
         t.end();
       });
     });
