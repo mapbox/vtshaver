@@ -105,6 +105,9 @@
         './vendor/nunicode/src/libnu/toupper.c',
         './vendor/nunicode/src/libnu/utf8.c'
       ],
+      'ldflags': [
+        '-Wl,-z,now',
+      ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
       # A portable file extension name. Build static lib (.a) then when you're linking,
