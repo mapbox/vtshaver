@@ -947,7 +947,7 @@ test('failure: Shaver.shave(): invalid callback', function(t) {
   }
 });
 
-test.only('success: triggers mbgl-core symbol error ', function(t) {
+test('success: downcase does not trigger mbgl-core symbol error ', function(t) {
   var buffer = mvtf.get('043').buffer;
   var sizeBefore = buffer.length;
   var filters = new Shaver.Filters(Shaver.styleToFilters({
