@@ -28,19 +28,14 @@
           'NDEBUG'
         ],
         'cflags': [
-         '-flto', '-fvisibility=hidden'
-        ],
-        'ldflags': [
-         '-flto',
-         '-fuse-ld=<(module_root_dir)/mason_packages/.link/bin/ld'
+         '-fvisibility=hidden'
         ],
         'xcode_settings': {
           'OTHER_CPLUSPLUSFLAGS!': [
             '-Os',
             '-O2'
           ],
-          'OTHER_LDFLAGS':[ '-flto' ],
-          'OTHER_CPLUSPLUSFLAGS': [ '-flto', '-fvisibility=hidden' ],
+          'OTHER_CPLUSPLUSFLAGS': [ '-fvisibility=hidden' ],
           'GCC_OPTIMIZATION_LEVEL': '3',
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
           'DEAD_CODE_STRIPPING': 'YES',
