@@ -95,7 +95,15 @@
         # mbgl::platform::Collator::resolvedLocale() const
         './mason_packages/.link/platform/default/src/mbgl/i18n/collator.cpp',
         # mbgl::util::convertUTF8ToUTF16(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
-        './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp'
+        './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp',
+        './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp',
+        './vendor/nunicode/src/libnu/ducet.c',
+        './vendor/nunicode/src/libnu/strcoll.c',
+        './vendor/nunicode/src/libnu/strings.c',
+        './vendor/nunicode/src/libnu/tolower.c',
+        './vendor/nunicode/src/libnu/tounaccent.c',
+        './vendor/nunicode/src/libnu/toupper.c',
+        './vendor/nunicode/src/libnu/utf8.c'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
@@ -111,15 +119,6 @@
               'OTHER_CPLUSPLUSFLAGS': [ '-Werror' ],
               'OTHER_LDFLAGS': ['-framework Foundation']
             }
-        }],
-        ['OS=="linux"', {
-          'sources': [
-            './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp'
-          ]
-        }, { # OS != "linux" so Mac
-          'sources': [
-            './mason_packages/.link/platform/darwin/src/string_nsstring.mm'
-          ]
         }]
       ],
       # Add to cpp glossary (or other doc in cpp repo) different types of binaries (.node, .a, static, dynamic (.so on linux and .dylib on osx))
@@ -131,6 +130,9 @@
       'xcode_settings': {
         'OTHER_LDFLAGS':[
           '-framework Foundation'
+        ],
+        'OTHER_CFLAGS': [
+            "-isystem <(module_root_dir)/vendor/nunicode/include"
         ],
         'OTHER_CPLUSPLUSFLAGS': [
             '<@(system_includes)',
