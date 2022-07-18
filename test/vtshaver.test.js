@@ -947,7 +947,7 @@ test('failure: Shaver.shave(): invalid callback', function(t) {
   }
 });
 
-test('success: downcase does not trigger mbgl-core symbol error ', function(t) {
+test('success: downcase does not trigger mbgl-core symbol error', function(t) {
   var buffer = mvtf.get('043').buffer;
   var sizeBefore = buffer.length;
   var filters = new Shaver.Filters(Shaver.styleToFilters({
@@ -989,7 +989,7 @@ test('success: downcase does not trigger mbgl-core symbol error ', function(t) {
   });
 });
 
-test('success: format_number does not trigger mbgl-core symbol error ', function(t) {
+test('success: format_number does not trigger mbgl-core symbol error', function(t) {
   const buffer = mvtf.get('062').buffer; // "points with different values for the same property - helpful for filtering tests"
   const sizeBefore = buffer.length;
   const filters = new Shaver.Filters(Shaver.styleToFilters({
@@ -1010,6 +1010,40 @@ test('success: format_number does not trigger mbgl-core symbol error ', function
     var postTile = vtinfo(shavedTile);
     t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
     t.equals(postTile.layers[0].name, 'cities', 'shaved tile contains expected layer');
+    t.ok((shavedTile.length < sizeBefore && shavedTile.length !== 0), 'successfully shaved');
+    if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
+    t.end();
+  });
+});
+
+test('success: downcase and format_number do not trigger mbgl-core symbol error', function(t) {
+  const buffer = mvtf.get('062').buffer; // "points with different values for the same property - helpful for filtering tests"
+  const sizeBefore = buffer.length;
+  const filters = new Shaver.Filters(Shaver.styleToFilters({
+    layers: [
+      {
+        "source-layer": "cities",
+        filter: [
+          "all",
+          ["in", "30.00", ["number-format", ["get", "population"], { "min-fraction-digits": 2 }]],
+          ["in", "awe", ["downcase", ["get", "name"]]]
+        ]
+      },
+    ]
+  }));
+
+  const options = {
+    filters: filters,
+    zoom: 14
+  };
+
+  Shaver.shave(buffer, options, function(err, shavedTile) {
+    if (err) throw err;
+    t.ok(shavedTile);
+    var postTile = vtinfo(shavedTile);
+    t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
+    t.equals(postTile.layers[0].name, 'cities', 'shaved tile contains expected layer');
+    t.equals(postTile.layers[0].features, 1, 'shaved tile contains one expected feature (AwesomeCity, 30)');
     t.ok((shavedTile.length < sizeBefore && shavedTile.length !== 0), 'successfully shaved');
     if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
     t.end();
