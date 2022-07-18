@@ -107,18 +107,18 @@
         './vendor/nunicode/src/libnu/utf8.c',
 
         # Bring in mbgl::platform::formatNumber
-        './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp'
+        './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp',
       ],
       'ldflags': [
         '-Wl,-z,now'
         # '-Wl,-bind_at_load'
       ],
       "libraries": [
-      # static linking (combining): Take a lib and smoosh it into the thing you're building.
-      # A portable file extension name. Build static lib (.a) then when you're linking,
-      # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
-      # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
-           "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
+        # static linking (combining): Take a lib and smoosh it into the thing you're building.
+        # A portable file extension name. Build static lib (.a) then when you're linking,
+        # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
+        # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
+        "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
