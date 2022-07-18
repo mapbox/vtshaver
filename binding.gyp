@@ -109,9 +109,9 @@
         # Bring in mbgl::platform::formatNumber
         './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp',
       ],
+      # Not enabling eager binding because there are unused symbols declared but not defined (e.g., heatmap program)
       # 'ldflags': [
       #   '-Wl,-z,now'
-      #   # '-Wl,-bind_at_load'
       # ],
       "libraries": [
         # static linking (combining): Take a lib and smoosh it into the thing you're building.
