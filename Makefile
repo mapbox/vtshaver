@@ -18,7 +18,7 @@
 # To learn more about the build system see https://github.com/mapbox/node-cpp-skel/blob/master/docs/extended-tour.md#builds
 
 # Whether to turn compiler warnings into errors
-export WERROR ?= false
+export WERROR ?= true
 
 # the default target. This line means that
 # just typing `make` will call `make release`
