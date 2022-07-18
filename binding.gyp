@@ -80,7 +80,8 @@
       'defines': [
         # we set protozero_assert to avoid the tests asserting
         # since we test they throw instead
-        'protozero_assert(x)'
+        'protozero_assert(x)',
+        'MBGL_USE_BUILTIN_ICU'
       ],
       'sources': [
         './src/vtshaver.cpp',
@@ -103,7 +104,14 @@
         './vendor/nunicode/src/libnu/tolower.c',
         './vendor/nunicode/src/libnu/tounaccent.c',
         './vendor/nunicode/src/libnu/toupper.c',
-        './vendor/nunicode/src/libnu/utf8.c'
+        './vendor/nunicode/src/libnu/utf8.c',
+
+        # Bring in mbgl::platform::formatNumber
+        './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp'
+      ],
+      'ldflags': [
+        '-Wl,-z,now'
+        # '-Wl,-bind_at_load'
       ],
       "libraries": [
       # static linking (combining): Take a lib and smoosh it into the thing you're building.
