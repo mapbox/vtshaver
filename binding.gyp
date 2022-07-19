@@ -97,6 +97,7 @@
         './mason_packages/.link/platform/default/src/mbgl/i18n/collator.cpp',
         # mbgl::util::convertUTF8ToUTF16(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
         './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp',
+        # mbgl::platform::lowercase and mbgl::platform::upcase
         './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp',
         './vendor/nunicode/src/libnu/ducet.c',
         './vendor/nunicode/src/libnu/strcoll.c',
@@ -105,7 +106,6 @@
         './vendor/nunicode/src/libnu/tounaccent.c',
         './vendor/nunicode/src/libnu/toupper.c',
         './vendor/nunicode/src/libnu/utf8.c',
-
         # Bring in mbgl::platform::formatNumber
         './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp',
       ],
