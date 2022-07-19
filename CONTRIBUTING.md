@@ -32,7 +32,7 @@ If you want release a new version of vtshaver:
 - [ ] If anything has been added to `.npmignore`, then we run `make testpacked` to ensure tests pass
 - [ ] For any major new feature we've made a dev package and tested downstream in staging
 - [ ] A developer has bumped the version in the `package.json` in `master`
-- [ ] A developer has committed with `[publish binary]` in the commit message
+- [ ] A developer has committed with `[publish binary]` in the commit message (this is necessary for a pre-release as well)
 - [ ] We've confirmed that the travis job with `[publish binary]` was fully 🍏
 - [ ] We've tagged a new git tag `git tag vX.X.X -a -m "vX.X.X"` and uploaded to github `git push --tags`
 - [ ] Update the `changelog.md`

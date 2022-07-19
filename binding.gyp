@@ -80,7 +80,8 @@
       'defines': [
         # we set protozero_assert to avoid the tests asserting
         # since we test they throw instead
-        'protozero_assert(x)'
+        'protozero_assert(x)',
+        'MBGL_USE_BUILTIN_ICU'
       ],
       'sources': [
         './src/vtshaver.cpp',
@@ -95,14 +96,29 @@
         # mbgl::platform::Collator::resolvedLocale() const
         './mason_packages/.link/platform/default/src/mbgl/i18n/collator.cpp',
         # mbgl::util::convertUTF8ToUTF16(std::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
-        './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp'
+        './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp',
+        # mbgl::platform::lowercase and mbgl::platform::upcase
+        './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp',
+        './vendor/nunicode/src/libnu/ducet.c',
+        './vendor/nunicode/src/libnu/strcoll.c',
+        './vendor/nunicode/src/libnu/strings.c',
+        './vendor/nunicode/src/libnu/tolower.c',
+        './vendor/nunicode/src/libnu/tounaccent.c',
+        './vendor/nunicode/src/libnu/toupper.c',
+        './vendor/nunicode/src/libnu/utf8.c',
+        # Bring in mbgl::platform::formatNumber
+        './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp',
       ],
+      # Not enabling eager binding because there are unused symbols declared but not defined (e.g., heatmap program)
+      # 'ldflags': [
+      #   '-Wl,-z,now'
+      # ],
       "libraries": [
-      # static linking (combining): Take a lib and smoosh it into the thing you're building.
-      # A portable file extension name. Build static lib (.a) then when you're linking,
-      # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
-      # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
-           "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
+        # static linking (combining): Take a lib and smoosh it into the thing you're building.
+        # A portable file extension name. Build static lib (.a) then when you're linking,
+        # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
+        # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
+        "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
@@ -122,6 +138,9 @@
       'xcode_settings': {
         'OTHER_LDFLAGS':[
           '-framework Foundation'
+        ],
+        'OTHER_CFLAGS': [
+            "-isystem <(module_root_dir)/vendor/nunicode/include"
         ],
         'OTHER_CPLUSPLUSFLAGS': [
             '<@(system_includes)',
