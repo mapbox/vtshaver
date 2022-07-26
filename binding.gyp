@@ -24,7 +24,6 @@
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/deps/geojson.hpp/include",
         "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/mapbox-base/extras/rapidjson/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/wagyu/include',
-        "-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/nunicode/include",
         '-isystem <(module_root_dir)/mason_packages/.link/include/mbgl/vendor/boost/include',
         "-isystem <(module_root_dir)/mason_packages/.link/src",
         "-isystem <(module_root_dir)/mason_packages/.link/platform",
@@ -81,7 +80,14 @@
         # we set protozero_assert to avoid the tests asserting
         # since we test they throw instead
         'protozero_assert(x)',
-        'MBGL_USE_BUILTIN_ICU'
+        'MBGL_USE_BUILTIN_ICU',
+        'NU_WITH_TOLOWER',
+        'NU_WITH_TOUPPER',
+        'NU_WITH_UDB',
+        'NU_WITH_UNACCENT',
+        'NU_WITH_UTF8_READER',
+        'NU_WITH_UTF8_WRITER',
+        'NU_WITH_Z_COLLATION'
       ],
       'sources': [
         './src/vtshaver.cpp',
@@ -99,13 +105,6 @@
         './mason_packages/.link/platform/default/src/mbgl/util/utf.cpp',
         # mbgl::platform::lowercase and mbgl::platform::upcase
         './mason_packages/.link/platform/default/src/mbgl/util/string_stdlib.cpp',
-        './vendor/nunicode/src/libnu/ducet.c',
-        './vendor/nunicode/src/libnu/strcoll.c',
-        './vendor/nunicode/src/libnu/strings.c',
-        './vendor/nunicode/src/libnu/tolower.c',
-        './vendor/nunicode/src/libnu/tounaccent.c',
-        './vendor/nunicode/src/libnu/toupper.c',
-        './vendor/nunicode/src/libnu/utf8.c',
         # Bring in mbgl::platform::formatNumber
         './mason_packages/.link/platform/default/src/mbgl/i18n/number_format.cpp',
       ],
@@ -118,7 +117,8 @@
         # A portable file extension name. Build static lib (.a) then when you're linking,
         # you're smooshing it into your lib. Static lib is linked when we build a project, rather than at runtime.
         # But Dynamic lib is loaded at runtime. (.node is a type of dynamic lib cause it's loaded into node at runtime)
-        "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a"
+        "<(module_root_dir)/mason_packages/.link/lib/libmbgl-core.a",
+        "<(module_root_dir)/mason_packages/.link/lib/libnu.a"
       ],
       'conditions': [
         ['error_on_warnings == "true"', {
@@ -138,9 +138,6 @@
       'xcode_settings': {
         'OTHER_LDFLAGS':[
           '-framework Foundation'
-        ],
-        'OTHER_CFLAGS': [
-            "-isystem <(module_root_dir)/vendor/nunicode/include"
         ],
         'OTHER_CPLUSPLUSFLAGS': [
             '<@(system_includes)',
