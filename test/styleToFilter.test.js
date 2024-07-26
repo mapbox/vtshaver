@@ -128,14 +128,32 @@ test('simple style layers', function(t) {
   t.deepEqual(styleToFilter({
     layers: [{
         'source-layer': 'water',
-        filter: ['!=', 'color', 'blue']
+        filter: [
+          'all',
+          [
+              "case",
+              [">=", ["distance-from-center"], 1],
+              true,
+              [">=", ["pitch"], 45]
+          ],
+          ['==', 'color', 'blue']
+        ]
       },
       {
         'source-layer': 'landcover',
-        filter: ['==', 'color', 'blue']
+        filter: [
+          '>=',
+          ['distance-from-center'],
+          [
+            'case',
+            ['==', 'color', 'blue'],
+            2,
+            4
+          ]
+        ]
       }
     ]
-  }), { water: { filters: ['any', ['!=', 'color', 'blue']], minzoom: 0, maxzoom: 22, properties: ['color'] }, landcover: { filters: ['any', ['==', 'color', 'blue']], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for multiple layers with filters');
+}), { water: { filters: ['any', ['all', ['case', ["literal", true], true, ["literal", true]], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['color'] }, landcover: { filters: ['any', ["literal", true]], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for no-op expressions');
 
   t.end();
 });
