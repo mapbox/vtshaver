@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.3.3
+- Replace no-op style filter expressions with `true` [#62](https://github.com/mapbox/vtshaver/pull/62).
+
 ## v0.3.2
 - Add missing symbol implementations for `downcase`, `upcase`, and `number-formatter` expressions. The implementation for `number-formatter` is a basic `to_string` and uses no config options. [#58](https://github.com/mapbox/vtshaver/pull/58)
 
