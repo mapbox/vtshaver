@@ -132,26 +132,33 @@ test('simple style layers', function(t) {
           'all',
           [
             'case',
-            ['>=', ['distance-from-center'], 5],
+            ['>=', ['distance-from-center'], 5],  // test no-op in case condition
             false,
             ['>=', ['pitch'], 45],
-            ['boolean', false],
-            ['to-boolean', ['literal', ['boolean', ['to-boolean', null]]]]
-          ],
-          [
-            'case',
-            ['<=', ['pitch'], 10],
-            ['to-boolean', ['get', 'display']],
-            ['==', ['distance-from-center'], 4],
-            true,
-            false
+            false,
+            true
           ],
           [
             'match',
-            ['distance-from-center'],
-            [1, 4],
+            ['get', 'distance'],
+            [1, 4, ['distance-from-center']],  // test no-op in match value
             false,
             true
+          ],
+          [
+            'coalesce',
+            ['get', 'display'],
+            ['>=', ['distance-from-center'], 3]  // test no-op in coalesce
+          ],
+          [
+            'any',
+            ['boolean', false],
+            ['>=', ['pitch'], 5]  // test no-op in any
+          ],
+          [
+            'all',
+            ['boolean', true],
+            ['<', ['pitch'], 5]  // test no-op in all
           ],
           ['==', 'color', 'blue']
         ]
@@ -168,9 +175,20 @@ test('simple style layers', function(t) {
             4
           ]
         ]
+      },
+      {
+        'source-layer': 'landuse_overlay',
+        filter: [
+          'case',
+          ['<=', ['pitch'], 10],
+          ['==', ['distance-from-center'], 4],  // test no-op in value
+          ['to-boolean', ['get', 'display']],
+          true,
+          false
+        ]
       }
     ]
-  }), { water: { filters: ['any', ['all', ['literal', true], ['case', ['literal', true], ['to-boolean', ['get', 'display']], ['literal', true], true, false], ['literal', true], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['display', 'color'] }, landcover: { filters: ['any', ['literal', true]], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for no-op expressions');
+}), { water: { filters: ['any', ['all', ['literal', true], ['literal', true], ['literal', true], ['any', ['boolean', false], ['literal', true]], ['all', ['boolean', true], ['literal', true]], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['distance', 'display', 'color'] }, landcover: { filters: ['any', ['literal', true]], minzoom: 0, maxzoom: 22, properties: ['color'] }, landuse_overlay: { filters: ['any', ['literal', true]], minzoom: 0, maxzoom: 22, properties: ['display'] } }, 'returns right filters for no-op expressions');
 
   t.end();
 });
