@@ -15,6 +15,18 @@
 			"source": "composite",
 			"id": "poi-scalerank1",
 			"source-layer": "poi_label"
+		},
+		{
+			"filter": [
+              "all",
+			  ["==","maki","cafe"],
+			  ["<=", ["pitch"], 45],
+			  ["<=", ["distance-from-center"], 1]
+            ],
+			"type": "symbol",
+			"source": "composite",
+			"id": "poi-landmarks",
+			"source-layer": "poi_label"
 		}
 	],
 	"owner": "greta"

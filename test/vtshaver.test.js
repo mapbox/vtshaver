@@ -31,7 +31,6 @@ var defaultInfo = vtinfo(defaultBuffer);
 
 // styles
 var style_cafe = require('./fixtures/styles/cafe.json');
-var style_cafe_noop = require('./fixtures/styles/cafe-noop.json');
 var style_water = require('./fixtures/styles/water.json');
 var style_one_feature = require('./fixtures/styles/one-feature.json');
 var style_expressions_legacy = require('./fixtures/styles/expressions-legacy.json');
@@ -430,23 +429,6 @@ test('success: layers sucessfully shaved, features shaved - equal ==', function(
     t.ok(shavedTile);
     t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
     t.equals(postTile.layers[0].features, 1, 'expected number of features after filtering');
-    t.equals(postTile.layers[0].name, 'poi_label', 'shaved tile contains expected layer');
-    t.ok((shavedTile.length < sizeBefore && shavedTile.length !== 0), 'successfully shaved');
-    if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
-    t.end();
-  });
-});
-
-test('success: layers sucessfully shaved, features shaved - noop', function(t) {
-  var filters = new Shaver.Filters(Shaver.styleToFilters(style_cafe_noop));
-  var sizeBefore = defaultBuffer.length;
-
-  Shaver.shave(defaultBuffer, {filters: filters, zoom: 16}, function(err, shavedTile) {
-    if (err) throw err;
-    var postTile = vtinfo(shavedTile);
-    t.ok(shavedTile);
-    t.equals(postTile.layers.length, 1, 'shaved tile contains expected number of layers');
-    t.equals(postTile.layers[0].features, 13, 'expected number of features after filtering');
     t.equals(postTile.layers[0].name, 'poi_label', 'shaved tile contains expected layer');
     t.ok((shavedTile.length < sizeBefore && shavedTile.length !== 0), 'successfully shaved');
     if (SHOW_COMPARE) console.log("**** Tile size before: " + sizeBefore + "\n**** Tile size after: " + shavedTile.length);
