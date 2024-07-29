@@ -1,7 +1,7 @@
 {
 	"version": 1,
 	"name": "cafe",
-	"center": [ 
+	"center": [
 	    -122.51238479904751,
 	    37.77981694417855
 	],
@@ -14,6 +14,18 @@
 			"type": "symbol",
 			"source": "composite",
 			"id": "poi-scalerank1",
+			"source-layer": "poi_label"
+		},
+		{
+			"filter": [
+              "all",
+			  ["==","maki","cafe"],
+			  ["<=", ["pitch"], 45],
+			  ["<=", ["distance-from-center"], 1]
+            ],
+			"type": "symbol",
+			"source": "composite",
+			"id": "poi-landmarks",
 			"source-layer": "poi_label"
 		}
 	],

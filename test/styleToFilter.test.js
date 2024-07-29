@@ -128,14 +128,67 @@ test('simple style layers', function(t) {
   t.deepEqual(styleToFilter({
     layers: [{
         'source-layer': 'water',
-        filter: ['!=', 'color', 'blue']
+        filter: [
+          'all',
+          [
+            'case',
+            ['>=', ['distance-from-center'], 5],  // test no-op in case condition
+            false,
+            ['>=', ['pitch'], 45],
+            false,
+            true
+          ],
+          [
+            'match',
+            ['get', 'distance'],
+            [1, 4, ['distance-from-center']],  // test no-op in match value
+            false,
+            true
+          ],
+          [
+            'coalesce',
+            ['get', 'display'],
+            ['>=', ['distance-from-center'], 3]  // test no-op in coalesce
+          ],
+          [
+            'any',
+            ['boolean', false],
+            ['>=', ['pitch'], 5]  // test no-op in any
+          ],
+          [
+            'all',
+            ['boolean', true],
+            ['<', ['pitch'], 5]  // test no-op in all
+          ],
+          ['==', 'color', 'blue']
+        ]
       },
       {
         'source-layer': 'landcover',
-        filter: ['==', 'color', 'blue']
+        filter: [
+          '>=',
+          ['distance-from-center'],
+          [
+            'case',
+            ['==', 'color', 'blue'],
+            2,
+            4
+          ]
+        ]
+      },
+      {
+        'source-layer': 'landuse_overlay',
+        filter: [
+          'case',
+          ['<=', ['pitch'], 10],
+          ['==', ['distance-from-center'], 4],  // test no-op in value
+          ['to-boolean', ['get', 'display']],
+          true,
+          false
+        ]
       }
     ]
-  }), { water: { filters: ['any', ['!=', 'color', 'blue']], minzoom: 0, maxzoom: 22, properties: ['color'] }, landcover: { filters: ['any', ['==', 'color', 'blue']], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for multiple layers with filters');
+}), { water: { filters: ['any', ['all', ['literal', true], ['literal', true], ['literal', true], ['any', ['boolean', false], ['literal', true]], ['all', ['boolean', true], ['literal', true]], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['distance', 'display', 'color'] }, landcover: { filters: ['any', ['literal', true]], minzoom: 0, maxzoom: 22, properties: ['color'] }, landuse_overlay: { filters: ['any', ['literal', true]], minzoom: 0, maxzoom: 22, properties: ['display'] } }, 'returns right filters for no-op expressions');
 
   t.end();
 });
