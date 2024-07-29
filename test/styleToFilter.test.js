@@ -135,23 +135,8 @@ test('simple style layers', function(t) {
             ['>=', ['distance-from-center'], 5],
             false,
             ['>=', ['pitch'], 45],
-            ['boolean', false],
-            ['to-boolean', ['literal', ['boolean', ['to-boolean', null]]]]
-          ],
-          [
-            'case',
-            ['<=', ['pitch'], 10],
-            ['to-boolean', ['get', 'display']],
-            ['==', ['distance-from-center'], 4],
-            true,
-            false
-          ],
-          [
-            'match',
-            ['distance-from-center'],
-            [1, 4],
             false,
-            true
+            ['get', 'display']
           ],
           ['==', 'color', 'blue']
         ]
@@ -159,18 +144,15 @@ test('simple style layers', function(t) {
       {
         'source-layer': 'landcover',
         filter: [
-          '>=',
-          ['distance-from-center'],
-          [
-            'case',
-            ['==', 'color', 'blue'],
-            2,
-            4
-          ]
+          'match',
+          ['get', 'distance'],
+          [1, 4, ['distance-from-center']],
+          false,
+          true
         ]
       }
     ]
-  }), { water: { filters: ['any', ['all', ['literal', true], ['case', ['literal', true], ['to-boolean', ['get', 'display']], ['literal', true], true, false], ['literal', true], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['display', 'color'] }, landcover: { filters: ['any', ['literal', true]], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for no-op expressions');
+  }), { water: { filters: true, minzoom: 0, maxzoom: 22, properties: ['display', 'color'] }, landcover: { filters: true, minzoom: 0, maxzoom: 22, properties: ['distance'] } }, 'returns right filters for no-op expressions');
 
   t.end();
 });
