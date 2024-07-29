@@ -131,10 +131,19 @@ test('simple style layers', function(t) {
         filter: [
           'all',
           [
-              "case",
-              [">=", ["distance-from-center"], 1],
-              true,
-              [">=", ["pitch"], 45]
+            "case",
+            [">=", ["distance-from-center"], 5],
+            false,
+            [">=", ["pitch"], 45],
+            ["boolean", false],
+            ["to-boolean", ["literal", ["boolean", ["to-boolean", null]]]]
+          ],
+          [
+            "match",
+            ["distance-from-center"],
+            [1, 4],
+            false,
+            true
           ],
           ['==', 'color', 'blue']
         ]
@@ -153,7 +162,7 @@ test('simple style layers', function(t) {
         ]
       }
     ]
-}), { water: { filters: ['any', ['all', ['case', ["literal", true], true, ["literal", true]], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['color'] }, landcover: { filters: ['any', ["literal", true]], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for no-op expressions');
+}), { water: { filters: ['any', ['all', ["literal", true], [ 'literal', true ], ['==', 'color', 'blue']]], minzoom: 0, maxzoom: 22, properties: ['color'] }, landcover: { filters: ['any', ["literal", true]], minzoom: 0, maxzoom: 22, properties: ['color'] } }, 'returns right filters for no-op expressions');
 
   t.end();
 });
