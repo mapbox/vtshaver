@@ -1,6 +1,6 @@
 {
   "name": "@mapbox/vtshaver",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Creates style-optimized vector tiles",
   "main": "./lib/index.js",
   "repository": {
@@ -43,5 +43,8 @@
     "host": "https://mapbox-node-binary.s3.amazonaws.com",
     "remote_path": "./{name}/v{version}/{configuration}/{toolset}/",
     "package_name": "{platform}-{arch}.tar.gz"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
